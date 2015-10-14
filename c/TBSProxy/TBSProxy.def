@@ -1,0 +1,6 @@
+; TBSProxy.def : Declares the module parameters for the DLL.
+
+LIBRARY      "TBSProxy"
+
+EXPORTS
+    ; Explicit exports can go here

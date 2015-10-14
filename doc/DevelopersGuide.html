@@ -1,0 +1,616 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<meta name="generator" content="HTML Tidy, see www.w3.org">
+<title>TPM/J 0.3 Developer's Guide</title>
+</head>
+<body>
+<center>
+<h1>TPM/J Developer's Guide</h1>
+</center>
+
+Current version: 0.3.0 (alpha)<br>
+ Release date: 3 April 2007<br>
+ 
+
+<h2>Overview</h2>
+
+TPM/J is an object-oriented API using Java for low-level access to
+the TPM. TPM/J is intentionally <em>not</em> compliant with the
+TCG's TSS specifications. Its main intent is to provide a flexible
+object-oriented API that is more immediately usable by researchers
+and programmers for doing experiments and software R&amp;D, in
+cases where TCG-compliance is not critical.<br>
+ <br>
+ TPM/J treats TPM low-level commands (i.e., the commands directly
+given to the TPM chip itself) and the response data structures of
+these commands as first-class Java objects. This allows programmers
+to easily access the fields of the command and response data
+structures in an object-oriented way, instead of having to
+explicitly read bytes from command-specific offsets in large byte
+arrays. Also, because it defines each command and response data
+structure as a separate Java class, it allows for a more modular,
+rather than monolithic implementation of APIs for each TPM
+command.<br>
+ <br>
+ TPM/J also provides higher-level Java classes that represent
+higher-level concepts and constructs such as authorization sessions
+and transport sessions. In the case of authorization sessions, for
+example, these classes allow a session's state to be kept within a
+separate session object, instead of putting the burden on the
+programmer to explicitly create and manage local or global
+variables for keeping track of such state in his or her own code.
+In the case of transport sessions, the object-oriented form of the
+TPM commands allows things such as the encryption and logging of
+wrapped commands, etc., to be done in a more systematic and modular
+way (although full support for encrypted wrapped commands is not
+yet available in the current alpha version.)<br>
+ <br>
+ Finally, access to the TPM itself is abstracted into a TPM driver
+object. By providing different platform-specific driver objects for
+different platforms, we are able to support multiple platforms
+(e.g., Linux and Windows) without requiring the programmer to
+change any code. To our knowledge, TPM/J is one of the first
+cross-platform APIs for using the TPM, that works in both Windows
+and Linux, without requiring the application programmer to write or
+compile separate versions.<br>
+ <br>
+ <br>
+ 
+
+<h2>User's Guide</h2>
+
+To use TPM/J on your system, see the <a href=
+"UsersGuide.html">User's Guide</a>.<br>
+ <br>
+ <br>
+ 
+
+ 
+
+<h2>Library and Other settings</h2>
+
+See the <a href="UsersGuide.html#settings">User's Guide</a> for the basic settings.
+
+<p>Note: in addition to the currently-supported platforms, 
+it should be relatively straightforward to make TPM work
+with any Windows library which provides a TDDL-level interface. For
+examples, see the code under <tt>src/.../drivers/win32</tt> and the
+<tt>c/IFXTPM</tt> and <tt>c/TBSProxy</tt> directory. If you write
+your own driver code, please contact us to contribute them back to
+the community. 
+</p>
+
+<h2>Working with the Source Code</h2>
+
+The source code is provided in the form of a zipped-up Eclipse
+project directory. To start working with it, just unzip it to your
+local file system, and import it as a project into your
+workspace.<br>
+ <br>
+ A note on formatting conventions: the TPM/J source code does
+<em>not</em> follow standard Java formatting conventions. The most
+noticeable differences are the placement of the opening brace "{",
+plus a slightly more liberal use of whitespace to improve
+readability. For a more detailed explanation of the formatting
+conventions used for TPM/J, see Luis Sarmenta's <a href=
+"http://people.csail.mit.edu/lfgs/lectures/cs21a/CodeFormat.ppt">lecture
+slides</a> on code formatting . The file
+SarmentaStyleEclipseCodeFormatterSettings.xml contains Eclipse
+formatter settings for roughly following the preferred style. Note,
+though, that Eclipse is not always able to follow all the ideal
+spacing, line-wrapping, and indentation conventions. In such cases,
+sticking with what Eclipse produces is acceptable.<br>
+ <br>
+ <br>
+
+<h2>High-Level TPM/J programming</h2>
+
+<p>
+The best place to start understanding TPM/J and learning to write your
+own applications using TPM/J, is to look at the tools classes in
+the <tt>tools</tt> package.
+</p>
+
+<p>
+For the most part, these do <em>not</em> deal directly with TPM commands,
+but use the convenience functions in the <tt>funcs</tt> package.
+The edu.mit.csail.tpmj.funcs package contains higher-level classes
+that make it easier to perform commonly-needed tasks without having
+to deal with the TPM command objects directly. To use these, you
+generally follow the following steps: 
+</p>
+
+<ol>
+<li>Initialize the TPMDriver. Note that the TPMUtilityFuncs class
+stores the TPMDriver object in a static variable which is
+automatically used by the classes in the funcs package.<br>
+<pre>
+TPMUtilityFuncs.initTPMDriver();
+</pre>
+</li>
+
+<li>Call the desired function. Note that the output of these
+functions are typically the relevant TPM structures themselves, and
+<em>not</em> the direct output of the command. 
+
+<pre>
+TPM_KEY key = TPMStorageFuncs.TPM_CreateWrapKey(
+                parentHandle, parentAuth, keyAuth, migAuth,
+                keyUsageType, keyUsageFlags );
+System.out.println( "Returned wrapped key: " + key );
+</pre>
+</li>
+<li>At the end of your <em>entire</em> program, call <tt>TPMUtilityFuncs.cleanupTPMDriver();</tt>
+This calls the <tt>cleanup()</tt> method on the driver, which on some platforms (i.e., Windows and Vista)
+is needed to close the TDDL session/context.
+</li>
+</ol>
+
+<p>
+In addition to these functions, there are also generic utility
+classes provided in edu.mit.csail.tpmj.util. In particular,
+<tt>CryptoUtil</tt> has several useful functions for doing some
+cryptographic computations in software. (Some of these use the
+Bouncy Castle library for Java.)  Also, <tt>TPMToolsUtil</tt> has
+convenience methods that are used by the tools classes to make
+handling command-line options easier.
+</p>
+
+
+<h2>Low-level TPM/J programming: How to Use TPM Command Objects</h2>
+
+<p>
+In general, the data structures defined by the <a href=
+"https://www.trustedcomputinggroup.org/specs/TPM">TCG's Structures
+of the TPM spec</a>, are defined as separate Java classes in the
+edu.mit.csail.tpmj.structs package. To be consistent with TCG
+notation, we have intentionally violated the standard Java naming
+conventions, and have named the classes in all caps, according to
+their TCG names. The structs package also contains some classes
+which do not directly correspond to TCG structures, but which may
+represent abstract base classes for TCG classes. These classes are
+not named in all caps.</p>
+
+<p>
+Similarly, the TPM commands, as defined in the TCG's Commands spec
+for the TPM are defined as separate Java classes in the
+edu.mit.csail.tpmj.commands package, again following the same names
+and capitalization used in the TCG Spec. Additionally, each of
+these command classes has a corresponding class that defines its
+output response data structure, with the name
+&lt;CommandName&gt;Output, where &lt;CommandName&gt; is the name of
+the command (e.g., TPM_GetPubKey and TPM_GetPubKeyOutput would be
+the Java class files corresponding to the TPM_GetPubKey
+command).</p>
+
+ To use an existing command object directly, one follows the
+following steps:<br>
+ 
+
+<ol>
+<li>Initialize and get a TPMDriver<br>
+<pre>
+TPMUtilityFuncs.initTPMDriver();
+TPMDriver tpmDriver = TPMUtilityFuncs.getTPMDriver();
+</pre>
+</li>
+
+<li>Create the command object. 
+
+<pre>
+TPM_PCRRead cmd = new TPM_PCRRead( pcrIndex );
+</pre>
+</li>
+
+<li>Call the command's execute method, giving it the TPMDriver
+object, and receiving the output in the appropriate response type. 
+
+<pre>
+TPM_PCRReadOutput output = cmd.execute( tpmDriver );
+</pre>
+
+<br>
+ Note that this command can throw a TPMException, so it should
+generally be surrounded by a try-catch. Any errors in executing the
+command, including TPM errors with a corresponding return code will
+throw a type of TPMException.<br>
+</li>
+
+<li>Read and use the output data structure using its fields. 
+
+<pre>
+TPM_PCRVALUE pcrVal = output.getOutDigest();
+System.out.println( "PCR " + pcrIndex + "= " + pcrVal );
+</pre>
+</li>
+</ol>
+
+<p>
+Using commands which require authorization is more complicated. For
+these, you would need to use one of the authorization session
+classes. See <tt>edu.mit.csail.tpmj.tests.TPMAuthTest</tt> for an example.
+Note also that there are many "convenience classes" in the
+edu.mit.csail.tpmj.funcs package for hiding the complexity of using
+authorization sessions directly for commonly-used tasks. <br>
+</p>
+
+ 
+
+<h2>How to Create Your Own TPM Command Objects</h2>
+
+At present, TPM/J does not yet implement command objects for all
+TPM 1.2 ordinals.  However, TPM/J is designed to easily accommodate new
+command ordinals in the future. To create support for an
+unsupported command, you generally have to follow the following
+steps: 
+
+<ol>
+<li>Check to see the TPM structures used in the input and output
+structures of the command. Create the corresponding Java files for
+these in the structs package, as necessary. The key tasks in
+defining these class files is writing the fields, the constructor,
+the <tt>toBytes</tt> method, and the <tt>fromBytes</tt> method.
+Look at the source code in the <tt>structs</tt> package for
+examples.</li>
+
+<li>Create the command class under the commands package, under the
+same name as given by TCG. It should be descended from TPMCommand
+(commands that require authorization should extend one of the
+TPMAuth* classes or TPMKeyAuth1Command). Note that TPMCommand
+classes are themselves TPMStructs, so you must also define the
+toBytes and fromBytes methods to specify how the command is
+converted into a byte array.</li>
+
+<li>Create the corresponding &lt;CommandName&gt;Output class. This
+should be placed in the commands package (not the structs
+package).</li>
+
+<li>Override the <tt>execute(...)</tt> method(s) of the
+&lt;CommandName&gt; class to return the appropriate type. e.g., 
+
+<pre>
+    @Override
+    public TPM_PCRReadOutput execute( TPMDriver tpmDriver ) throws TPMException
+    {
+        return (TPM_PCRReadOutput) super.execute( tpmDriver );
+    }
+</pre>
+</li>
+
+<li>Also override the <tt>getReturnType()</tt> method of the
+&lt;CommandName&gt; class to return the class of the appropriate
+type. e.g., 
+
+<pre>
+    @Override
+    public Class getReturnType()
+    {
+        return TPM_PCRReadOutput.class;
+    }
+</pre>
+</li>
+
+<li>If desired, add corresponding convenience functions for using
+the new command to one of the classes (or a new class) in the funcs
+package. These convenience functions should hide the creation of
+the TPM command object itself. It should receive the user-level
+input data for the command, and return the desired TPM structure.
+(Although in cases where the TPM returns several data structures of
+interest, it is OK, or even better, to return the entire command
+output data structure itself directly.)</li>
+</ol>
+
+<p>See the source code in the commands package for examples.</p>
+
+<p>(TODO: More explicit documentation on how to define
+ByteArrayables and write toBytes and fromBytes methods. For now,
+please look at the examples in the source code.)</p>
+
+<h2>Parameter Handling</h2>
+
+The tools in the <tt>tools</tt> package use
+a package for handling command-line parameters
+from my (Luis Sarmenta's) thesis project
+<a href="http://people.csail.mit.edu/lfgs/bayanihan/papers/sarmenta-phd-abstract.html">
+Bayanihan</a>.  It provides a convenient way
+to handle command-line parameters and switches.
+To understand how it works, look
+at the source code and the tools package.
+
+<h2>Debugging</h2>
+
+<p>The edu.mit.csail.tpmj.util.Debug class provides debugging
+functions in the form of print statements that only print when
+debugging for certain classes is on. To use, add Debug.setDebugOn(
+MyClass.class, true ) for each class "MyClass" that you want to
+debug, at the beginning of the main() method of the main class you
+are running. Then, in MyClass, you can use Debug.print( ... ) and
+Debug.println( ... ) methods for conditional debugging output. If
+debugging has been turned on for MyClass, then these methods will
+print to System.out. Otherwise, they won't. See the demos, tools,
+and tests classes, and the classes that these debug, for
+examples.</p>
+
+<p>Note that the print and println commands accept 
+a variable-length argument list of Objects.
+The recommended way to use it is to use a comma (',')
+instead of string concatenation ('+') when
+printing a complex object (e.g., a TPMStruct object)
+with a long <tt>toString(...)</tt> method.
+This way the call to the <tt>toString</tt>
+of the object is delayed until 
+within the method itself, and only happens if
+debugging is on.  This can save a significant
+amount of time when debugging is off.
+</p>
+
+For example,
+<br>
+The following:
+<pre>
+Debug.println( "output = ", outputStruct );
+</pre>
+is better than:
+<pre>
+Debug.println( "output = " + outputStruct );
+</pre>
+(Note also that byte array objects
+are automatically printed using <tt>ByteArrayUtil.toPrintableHexString(...)</tt>
+within the print statement.)
+
+<p>The <tt>main()</tt> method of the <tt>Debug</tt> class has
+a demonstration of the performance differences of these two techniques.
+
+<p>For more complex conditional Debug operations, you
+can also use an <tt>if</tt> statement with
+the <tt>Debug.isDebugOn()</tt> method.
+</p>
+
+<p>Finally, most of the tools in the <tt>tools</tt> package support
+the /D option, which turns on debugging mode for the tpm driver.
+This prints all the input and output bytes to/from the TPM.</p>
+
+<h2>To-Do List<br>
+</h2>
+
+<h3>Unresolved/Unexplained problems</h3>
+<ul>
+<li>On an Intel Mac (with Infineon 1.2 chip), the TPMSeal tool returns a TPM_BAD_PARAMETER error if PCRs are specified.
+The same tool has been shown to work on a Broadcom 1.2 chip under Linux, and an Infineon TPM 1.1 chip under Windows XP.</li>
+<li>Signing a transport session log with an AIK works on a Broadcom 1.2 chip and an Infineon 1.2 chip (on the Mac),
+but fails on the ST Micro TPM 1.2 chip on a Gateway M465E.  Strangely, signing with a non-AIK signing key works on the
+ST Micro chip.  (However, signing a transport session log with a non-AIK key is not useful because 
+such transport session logs can easily be forged using a TPM_Sign command using the same TPM, and so does not prove
+that the commands were actually executed, which is what signed transport session logs are supposed to prove.)</li>
+</ul>
+
+<h3>Others</h3>
+<ol>
+<li>Not all TPM commands have corresponding command classes yet.
+Continue to implement unimplemented ordinals.</li>
+
+<li>Currently, transport sessions work enough to be usable for
+signing monotonic counter operation outputs. (This is the only way
+to get non-forgeable signed outputs certifying the value of the
+monotonic counters). At present, however, transport sessions do not
+fully support encryption. They also do not support all TPM
+Commands. (Some ordinals which require special HMAC handling may or
+may not work properly right now.)</li>
+
+<li>NVRAM functions are working but not fully tested.</li>
+
+<li>AIK creation creates usable AIKs, but has not been tested with
+real privacy CAs.</li>
+
+<li>Javadoc documentation should be cleaned-up and produced.</li>
+
+<li>Some of the examples can be improved or documented better.
+There are some tests or main functions in the funcs package, which
+can/should eventually be turned into independent tools
+classes.</li>
+</ol>
+
+
+<h2><a name="timingdemos">Timing Tests</a></h2>
+
+Use demo.TPMTiming to view a timing report for various TPM
+functions. Use <a href="#timecount">tests.TPMCounterTimingTest</a>
+to view timing constraints for monotonic counters.<br>
+<pre>
+java edu.mit.csail.tpmj.tests.TPMTiming &lt;ownerPwd&gt; [srkPwd]
+</pre>
+
+ Notes:
+ <ul>
+ <li>This test will create a test key file in the process.</li>
+ <li><b>Warning!</b> This test extends some of the PCRs and may change
+ your configuration, and these changes cannot be reversed without rebooting
+ your machine.  This may or may not interfere with other
+ applications which depend on having a specific PCR configuration (e.g., to seal and unseal data).
+ </li>
+ <li>For TPM 1.1b chips, some of these demos will fail.</li>
+</ul>
+
+
+
+<h2><a name="othertests">Other (Old) Tests</a></h2>
+
+<p>The code in the tpmj.tests folder is rough code intended
+to test certain features of TPM/J as well as give developers
+an idea of ways to use these features at a lower level. 
+Note also that some of the classes in the tpmj.funcs folder 
+contain their test code in their main() methods.
+</p>
+
+<em>(<b>Note:</b>The documentation for these tests
+have not been updated since version 0.2.0,
+and the tests themselves may not have been fully tested since then.
+Some the tests below may not work anymore.)</em></p>
+
+<ul>
+<li><a href="#auth">Test running TPM commands in OIAP and OSAP
+sessions</a></li>
+
+<li><a href="#pcr">Test the PCR quoting functionality of the
+TPM</a></li>
+
+<li><a href="#testkey">Test a saved key</a></li>
+
+<li><a href="#counters">Test the functionality of a monotonic
+counter</a></li>
+
+<li><a href="#timecount">Test the timing constraints of a monotonic
+counter</a></li>
+
+<li><a href="#transport">Test the functionality of the transport
+sessions</a></li>
+</ul>
+ 
+
+
+<h3><a name="auth">Test running TPM commands in OIAP and OSAP sessions</a></h3>
+
+Use tests.TPMAuthTest to test runnning TPM commands in OIAP and OSAP sessions:
+<pre>
+java edu.mit.csail.tpmj.tests.TPMAuthTest &lt;keyHandle&gt;
+</pre>
+
+Arguments:<br>
+ - keyHandle - The key handle (in hex) of the key loaded in the TPM
+that should be used to perform this test. Defaults to 0x40000000
+(SRK).<br>
+ <br>
+ Notes:<br>
+ - The final test ("Trying OIAPSession with wrong secret")
+<em>should</em> fail with a TPM_AUTHFAIL<br>
+
+
+<h3><a name="pcr">Test the PCR quoting functionality of the TPM</a></h3>
+
+Use tests.TPMPcrTest to test the PCR quoting functionality of the TPM: 
+<pre>
+java edu.mit.csail.tpmj.tests.TPMPcrTest &lt;keyFile&gt; &lt;keyPassword&gt;
+</pre>
+
+Arguments:<br>
+ - keyFile - A TPM key capable of signing data. This will default
+to 'testkey.key'.<br>
+ - keyPassword - The password to the specified TPM key. This will
+default to 'test'.<br>
+ <br>
+ Notes:<br>
+ - The 'signing' attack mentioned at the end of the test
+demonstrates how a non-AIK signing key can be used to both a quote
+or TPM sign arbitrary data, producing identical signatures. This
+shows that signing a TPM_Quote operation is not secure if a key
+other an AIK is used.
+
+<h3><a name="testkey">Test a saved key</a></h3>
+
+Use tests.TPMKeyTest to test a saved .key file generated by
+TPMCreateKey or TPMWrapKey: 
+<pre>
+java edu.mit.csail.tpmj.tests.TPMPcrTest &lt;keyFile&gt; &lt;keyPassword&gt; &lt;parentPassword&gt;
+</pre>
+
+Arguments:<br>
+ - keyFile - A TPM key capable of signing data. This will default
+to 'testkey.key'.<br>
+ - keyPassword - The password to the specified TPM key. This will
+default to (no authorization required).<br>
+ - parentPassword - The password of the parent key for loading the
+key.&nbsp; This will default to all-zeros or no authorization.<br>
+ <br>
+ Notes:<br>
+ - The tests done here are similar to those done in TPMCreateKey
+and TPMWrapKey but work on an existing key (without creating a new
+one).<br>
+ - If keyFile has a corresponding .ser file, it will be loaded and
+deserialized as an RSA keypair.&nbsp; The crypto operations would
+then be done both in software and using the TPM, and the results
+compared.<br>
+
+<h3><a name="counters">Test the functionality of a monotonic counter</a></h3>
+
+Use tests.TPMCounterTest to test the functionality of the TPM's
+monotonic counters:
+<pre>
+java edu.mit.csail.tpmj.tests.TPMCounterTest &lt;counterID&gt;
+</pre>
+
+Arguments:<br>
+ - counterID - The monotonic counter that should be used in this
+test.<br>
+ <br>
+ Notes:<br>
+ - Only one monotonic counter on the TPM can be incremented per
+reboot. If any other monotonic counters have been incremented since
+the last reboot, this test will fail.<br>
+
+<h3><a name="timecount">Test the timing constraints of a monotonic counter</a></h3>
+
+Use tests.TPMCounterTimingTest to test the timing constraints of
+the TPM's monotonic counters:<br>
+<pre>
+java edu.mit.csail.tpmj.tests.TPMCounterTimingTest &lt;counterID&gt;
+</pre>
+
+Arguments:<br>
+ - counterID - The monotonic counter that should be used in this
+test.<br>
+ <br>
+ Notes:<br>
+ - Only one monotonic counter on the TPM can be incremented per
+reboot. If any other monotonic counters have been incremented since
+the last reboot, this test will fail.<br>
+ - This test needs to load a key named 'testaik.key' with password
+'test' from the current working directory.<br>
+ - This test will take a while, since it performs 100 increments on
+the specified counter. <br>
+
+
+<h3><a name="transport">Test the functionality of the transport sessions</a></h3>
+
+Use tests.TPMTransTest to see how counters can be incremented from
+within a transport session in the TPM:<br>
+<pre>
+java edu.mit.csail.tpmj.tests.TPMTransTest &lt;counterID&gt;
+</pre>
+
+Arguments:<br>
+ - counterID - The counter that will be used in this transport
+session test.<br>
+ <br>
+ Notes:<br>
+ - This test needs to load a key named 'testkey.key' with password
+'test' from the current working directory.<br>
+ - The specified counter will be incremented during this test.<br>
+ - Again, because of the 'signing attack', an AIK should be used
+for signing transport sessions logs. Otherwise, an adversary can
+easily fake a log and use TPM_Sign to produce the appropriate
+signature.<br>
+<br>
+ 
+
+
+<h2>Contributors</h2>
+<ul>
+<li>Lead author: <a href="http://people.csail.mit.edu/lfgs/">Luis Sarmenta</a> (MIT CSAIL)</li>
+
+<li>Other Contributors: 
+
+<ul>
+<li>Jonathan Rhodes(MIT CSAIL), some documentation and code</li>
+
+<li>Thomas Müller (xnos.org), Windows Vista TBS proxy</li>
+</ul>
+</li>
+</ul>
+
+<hr>
+<i>Original author: Luis Sarmenta (lfgs at mit dot edu)</i><br>
+<i>Last edited by: Luis Sarmenta (lfgs at mit dot edu) on April 3, 2007</i>
+</body>
+</html>
+

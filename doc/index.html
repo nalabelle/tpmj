@@ -1,0 +1,88 @@
+<html>
+<head>
+<title>TPM/J Java-based API for the Trusted Platform Module (TPM)</title>
+</head>
+<body>
+<center><h1>TPM/J Java-based API for the Trusted Platform Module (TPM)</h1>
+</center>
+Current version: 0.3.0 (alpha)<br />
+Release date: 3 April 2007<br />
+
+<h2>
+Overview</h2>
+<p>
+TPM/J is an object-oriented API using Java for low-level access to the TPM. 
+It was developed as part of the research project on 
+<a href="http://projects.csail.mit.edu/tc/">Trusted Computing at MIT</a>.
+</p>
+<p>
+TPM/J is intentionally <em>not</em> compliant with the TCG's TSS specifications.
+Its main intent is to provide a flexible object-oriented API that is more immediately
+usable by researchers and programmers for doing experiments and software R&amp;D,
+in cases where TCG-compliance is not critical.</p>
+<p>
+TPM/J treats TPM low-level commands (i.e., the commands directly given to the TPM
+chip itself), and the response data structures of these commands, as first-class Java objects. This
+allows programmers to easily access the fields of the command and response data
+structures in an object-oriented way, instead of having to explicitly read bytes
+from command-specific offsets in large byte arrays. Also, because it defines each
+command and response data structure as a separate Java class, it allows for a more
+modular, rather than monolithic implementation of APIs for each TPM command.</p>
+<p>
+TPM/J also provides higher-level Java classes that represent higher-level concepts
+and constructs such as authorization sessions and transport sessions.  In the
+case of authorization sessions, for example, these classes allow a session's state
+to be kept within a separate session object, instead of putting the burden on the
+programmer to explicitly create and manage local or global variables for keeping
+track of such state
+in his or her own code.  In the case of transport sessions,
+the object-oriented form of the TPM commands allows things such as the encryption
+and logging of wrapped commands, etc., to be done in a more systematic and modular
+way (although full support for encrypted wrapped commands is not yet available in
+the current alpha version.)</p>
+<p>
+Finally, access to the TPM itself is abstracted into a TPM driver object. By providing
+different platform-specific driver objects for different platforms, we are able
+to support multiple platforms (e.g., Linux, Windows, Mac OS X, and Vista) without requiring the programmer
+to change any code. To our knowledge, TPM/J is one of the first cross-platform
+APIs for using the TPM, that works under Windows, Linux, Mac OS X, and Vista without requiring
+the application programmer to write or compile separate versions.</p>
+
+<h2>Download</h2>
+<ul>
+  <li>Latest version: <a href="tpmj-alpha0.3.0.zip">0.3.0 (alpha)</a>, April 3, 2007</li>
+</ul>
+
+<h2>Quick Start Guide</h2>
+<p>
+To test TPM/J on your system, see the <a href="QuickStartGuide.html">Quick Start Guide</a>.</p>
+
+<h2>User's Guide</h2>
+<p>
+To use TPM/J on your system, see the <a href="UsersGuide.html">User's Guide</a>.</p>
+
+<h2>Developer's Guide</h2>
+<p>
+For more information on writing your own programs using TPM/J, or modifying or contributing to
+TPM/J, see the <a href="DevelopersGuide.html">Developer's Guide</a>.</p>
+
+<h2>Contributors</h2>
+<ul>
+<li>Lead author: <a href="http://people.csail.mit.edu/lfgs/">Luis Sarmenta</a> (MIT CSAIL)</li>
+
+<li>Other Contributors: 
+
+<ul>
+<li>Jonathan Rhodes(MIT CSAIL), some documentation and code</li>
+
+<li>Thomas Müller (xnos.org), Windows Vista TBS proxy</li>
+</ul>
+</li>
+</ul>
+
+
+<hr />
+<i>Original author: Luis Sarmenta (lfgs at mit dot edu)</i><br />
+<i>Last edited by: Luis Sarmenta (lfgs at mit dot edu) on April 3, 2007</i>
+</body>
+</html>

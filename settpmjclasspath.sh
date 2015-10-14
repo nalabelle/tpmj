@@ -1,0 +1,1 @@
+export CLASSPATH=~/tpm/tpmj/bin:~/tpm/tpmj/lib/bcprov-jdk15-131.jar

@@ -1,0 +1,73 @@
+TPM/J Java API for TPM
+Copyright 2006-2007, Massachusetts Institute of Technology
+(See LICENSE.TXT for license details)
+
+Lead author: Luis F. G. Sarmenta (lfgs at mit dot edu)
+Contributors: 
+Jonathan Rhodes (jrhodes at mit dot edu)
+Thomas Müller, xnos Internet Services (xnos.org)
+
+
+HISTORY
+-------
+
+20070403: TPM/J Alpha 0.3
+
+- Lots of changes and improvements
+- Improved cross-platform support:
+  - added support for Intel Mac OS X and Windows Vista
+  - removed dependence on xFunction for Windows XP
+- User-usable command-line tools in tools package
+  - not restricted to specific passwords anymore
+  - much more comprehensive set of tools
+  - added tool for using monotonic counter for "count-stamping" data
+- Additional TPM command support
+  - TPM_Seal and TPM_Unseal, TPM_FlushSpecific, TPM_LoadKey2, etc.
+- Cleaned-up code and APIs for better ease-of-use
+- A few bug-fixes
+- Improved documentation
+
+Known Issues:
+- Vista unloads the key handle after exiting the LoadKey tool, so tools
+that take keyHandles as command-line arguments currently do not work
+under Vista.  However, writing your own program that loads a key
+and uses the key handle within the same program works.
+- Sealing data to a PCR configuration doesn't work on an Intel Mac
+with an Infineon TPM 1.2 chip.  It works on other chips, though.
+It's not clear why.
+- Signing a transport session with an AIK doesn't work on
+a Gateway M465E with an ST Micro chip 1.2 (under Linux), 
+but signing with a non-AIK signing key works.  
+We have not confirmed this problem on another ST Micro chip 1.2, though.
+
+Remainding TODOs:
+- Implement other commands
+- Implement support for encrypted commands and other commands that require
+  special HMAC handling in transport sessions.
+ 
+
+20061212: TPM/J Alpha 0.2
+(First packaged version released to public)
+
+- Renamed to TPM/J to avoid confusion with IAIK/OpenTC jTpmTools.
+- Changed the way encryption of passwords and computation of HMACs are handled in
+  authorization sessions and transport sessions.
+- Included binaries for xFunction and win32 driver (see license)
+- Included QuickStart documentation
+
+TODO:
+- Rewrite code to use JNI directly so xFunction will be unnecessary
+- Implement other commands
+- Implement support for encrypted commands and other commands that require
+  special HMAC handling in transport sessions.
+
+
+20060822: JTPM version Alpha 0.1.0.0
+(First packaged version, released internally at MIT)
+
+- Windows TDDL driver class will not work with xFunction from excelsior.com
+  (not included because it is a commercial license)
+
+TODO: 
+- rewrite this code to use JNI directly without using xFunction
+

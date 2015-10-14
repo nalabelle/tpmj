@@ -1,0 +1,4923 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta name="generator" content="HTML Tidy, see www.w3.org">
+<title>TPM/J 0.3 Quick Start Guide</title>
+</head>
+<body>
+<center>
+<h1>TPM/J 0.3 Quick Start Guide</h1>
+</center>
+
+<h2><a name="intro">Introduction</a></h2>
+
+<p>
+This document provides examples to get you started
+using TPM/J.  
+</p>
+
+<h2><a name="reqs">System Requirements</a></h2>
+
+<ul>
+<li>Java J2SE JRE 5.0 or above</li>
+
+<li>Windows XP, Windows Vista, Linux, or Intel Mac OS X</li>
+
+<li>TPM 1.1b (TPM 1.2 for full functionality)</li>
+
+<li>Installed and working drivers for the TPM
+<ul>
+  <li>(Plus, ifxtpm.dll for Windows XP)</li>
+</ul>
+</li>
+
+<li>The TPM <i>must</i> be enabled in the BIOS</li>
+</ul>
+
+ 
+<h2><a name="settings">Classpath and Library Settings</a></h2>
+
+<p>
+First, unzip the TPM/J zip file onto a directory of your choice.
+If you are using Linux or Mac OS X, it is recommended that you create
+a folder <code>~/tpm/</code> and then unzip the file under that folder, creating 
+the folder <code>~/tpm/tpmj/</code>.
+</p>
+
+Then, see the <a href="UsersGuide.html#settings">User's Guide</a> for more information about settings.
+
+<h2><a name="examples">Examples</a></h2>
+
+<p>
+Here are example runs demonstrating the different tools
+provided with TPM/J.
+</p>
+
+<p>For details on how to use the tools, see the
+<a href="UsersGuide.html">User's Guide</a>
+</p>
+
+<p>For details on how to <em>program</em> using TPM/J, see the
+<a href="DevelopersGuide.html">Developer's Guide</a>
+</p>
+
+<ul>
+<li><a href="#macexample">Intel Mac OS X (Mac Mini with Infineon TPM 1.2)</a></li>
+<li><a href="#linuxexample">Linux (HP dc7600 with Broadcom TPM 1.2)</a></li>
+<li><a href="#vistaexample">Vista (HP dc7600 with Broadcom TPM 1.2)</a></li>
+</ul>
+
+
+<h3><a name="macexample">Intel Mac OS X (Mac Mini with Infineon TPM 1.2)</a></h3>
+
+<p>
+The first step is to install the TPM driver port for Intel Macs,
+done by Amit Singh.  Follow 
+<a href="http://www.osxbook.com/book/bonus/chapter10/tpm/">his instructions</a> 
+up to <em>before</em>
+the section titled "TrouSerS".
+</p>
+
+
+<h4>Loading the driver</h4>
+
+To load the driver, run ...
+<pre>LFGSMACMINI:~/tpm/tpmj lfgs$ sudo kextload -v ~/tpm/OSXBookTPM.kext
+kextload: extension /Users/lfgs/tpm/OSXBookTPM.kext appears to be valid
+kextload: loading extension /Users/lfgs/tpm/OSXBookTPM.kext
+kextload: /Users/lfgs/tpm/OSXBookTPM.kext loaded successfully
+kextload: loading personalities named:
+kextload:     Infineon SLB 9635 TT 1.2
+kextload: sending 1 personality to the kernel
+kextload: matching started for /Users/lfgs/tpm/OSXBookTPM.kext
+LFGSMACMINI:~/tpm/tpmj lfgs$ 
+</pre>
+
+<h4>Setting the path</h4>
+
+<p>
+The following example assumes you the TPM/J files are in <code>~/tpm/tpmj/</code>,
+and you have created and cd'd into the folder <code>~/tpm/tpmjdemo/</code>.
+</p>
+
+<pre>
+LFGSMACMINI:~/tpm/tpmj lfgs$ export CLASSPATH=~/tpm/tpmj/lib/tpmj.jar:~/tpm/tpmj/lib/bcprov-jdk15-131.jar
+</pre>
+
+<h4>Clearing the TPM</h4>
+
+<p>
+This is an optional step, in case you want to or need to clear the TPM.
+</p>
+<p>
+<strong>Warning!</strong>
+This will cause you to lose access to ALL data or keys protected by the TPM
+(except for the EK).
+</p>
+
+<pre>
+LFGSMACMINI:~/tpm/tpmj lfgs$ sudo java edu.mit.csail.tpmj.tools.special.TPMForceClear
+Password:
+Executing TPM_SelfTestFull() ... 
+Done in 883 ms.
+Executing TPM_GetTestResult() ... 
+Done in 29 ms.
+Results: ff ff
+Asserting Physical Presence ...
+Executing TPM_ForceClear() ... 
+Done in 152 ms.
+You should REBOOT your machine.
+</pre>
+
+<p>
+After rebooting, load the driver and set the classpath again.
+Then, you can check the status of the TPM using TPMInfo.
+</p>
+<pre>
+LFGSMACMINI:~/tpm/tpmjdemo lfgs$ sudo java edu.mit.csail.tpmj.tools.TPMInfo
+ownerPwd = null, Encoded (NULL [no authorization]) = null
+
+*****
+Getting manufacturer ID ... 
+TPM VENDOR ID = 0x49465800 (IFX)
+----
+
+Getting version via TPM 1.1 way ... 
+Returned: edu.mit.csail.tpmj.structs.TPM_STRUCT_VER: 01 01 00 00
+
+----
+
+Getting version via TPM 1.2 way ... 
+Returned: edu.mit.csail.tpmj.structs.TPM_CAP_VERSION_INFO: 00 30 01 02 01 00 00 02 00 49 46 58 00 00 00
+tag: 0x30
+version: edu.mit.csail.tpmj.structs.TPM_VERSION: 01 02 01 00
+specLevel: 0x2
+errataRev: 0x0
+tpmVendorID: 0x49465800
+vendorSpecificSize: 0x0
+vendorSpecific: 
+
+----
+
+Getting TPM Flags (TPM 1.2 only) ... 
+Getting TPM Permanent Flags ... 
+Returned: TPM_PERMANENT_FLAGS:
+disable: true
+ownership: true
+deactivated: true
+readPubek: true
+disableOwnerClear: false
+allowMaintenance: false
+physicalPresenceLifetimeLock: true
+physicalPresenceHWEnable: false
+physicalPresenceCMDEnable: true
+CEKPUsed: false
+TPMpost: false
+TPMpostLock: false
+FIPS: false
+operator: false
+enableRevokeEK: false
+nvLocked: true
+readSRKPub: false
+tpmEstablished: false
+
+Getting TPM Volatile Flags ... 
+Returned: TPM_STCLEAR_FLAGS:
+deactivated: true
+disableForceClear: false
+physicalPresence: false
+physicalPresenceLock: false
+bGlobalLock: false
+
+----
+
+Reading Public Endorsement Key using TPM_OwnerReadInternalPub (TPM 1.2 only) ...
+Error: java.lang.IllegalArgumentException: TPMAdminFuncs.TPM_OwnerReadInternalPub: ownerAuth can't be null.
+Reading Public Endorsement Key using TPM_ReadPubek ...
+(using all-zeros as nonce)
+TPM Exception: edu.mit.csail.tpmj.TPMErrorReturnCodeException
+Occured on input: edu.mit.csail.tpmj.commands.TPM_ReadPubek: 
+00 c1 00 00 00 1e 00 00 00 7c 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00
+
+Output (if any): edu.mit.csail.tpmj.structs.ByteArrayTPMOutputStruct: 00 c4 00 00 00 0a 00 00 00 07
+Return Code (if any): 7 (TPM_DISABLED)
+----
+
+
+Getting number of PCRS: 
+numPcrs = 24
+Reading PCRs
+TPM Exception: edu.mit.csail.tpmj.TPMErrorReturnCodeException
+Occured on input: edu.mit.csail.tpmj.commands.TPM_PCRRead: 00 c1 00 00 00 0e 00 00 00 15 00 00 00 00
+Output (if any): edu.mit.csail.tpmj.structs.ByteArrayTPMOutputStruct: 00 c4 00 00 00 0a 00 00 00 07
+Return Code (if any): 7 (TPM_DISABLED)
+----
+
+Reading Key handles TPM 1.1 style
+TPM_KEY_HANDLES_LIST: 0 loaded handles
+
+----
+
+Reading KEY handles (TPM 1.2 style) ...
+(0 handles):
+
+----
+
+Reading CONTEXT handles (TPM 1.2 style) ...
+(0 handles):
+
+----
+
+Reading AUTH SESSION handles (TPM 1.2 style) ...
+(0 handles):
+
+----
+
+Reading TRANSPORT SESSION handles (TPM 1.2 style) ...
+(0 handles):
+
+----
+
+Reading monotonic counters (TPM 1.2 only) ...
+(0 counters):
+
+----
+</pre>
+
+<p>
+Note thet following status bits indicating the TPM is disabled and deactivated.
+(But note that ownership = true does NOT mean there is an owner.)
+</p>
+<pre>
+disable: true
+ownership: true
+deactivated: true
+</pre>
+
+<h4>Activating the TPM</h4>
+
+
+
+<pre>
+LFGSMACMINI:~/tpm/tpmjdemo lfgs$ sudo java edu.mit.csail.tpmj.tools.special.TPMActivate
+Running TPMPhysicalEnable ...
+Executing TPM_SelfTestFull() ... 
+Done in 879 ms.
+Executing TPM_GetTestResult() ... 
+Done in 26 ms.
+Results: ff ff
+Asserting Physical Presence ...
+Executing TPM_PhysicalEnable() ... 
+Done in 12 ms.
+Your TPM should now be enabled, but may need to be activated.
+calling TPM_PhysicalSetDeactivated(false) ... 
+Done in 10 ms.
+Your TPM is now activated.
+You must REBOOT your machine for settings to take effect.
+</pre>
+
+After rebooting, load the driver and set the classpath again.
+Then check info again ...
+<pre>
+LFGSMACMINI:~/tpm/tpmjdemo lfgs$ sudo java edu.mit.csail.tpmj.tools.TPMInfo
+ownerPwd = null, Encoded (NULL [no authorization]) = null
+
+*****
+Getting manufacturer ID ... 
+TPM VENDOR ID = 0x49465800 (IFX)
+----
+
+Getting version via TPM 1.1 way ... 
+Returned: edu.mit.csail.tpmj.structs.TPM_STRUCT_VER: 01 01 00 00
+
+----
+
+Getting version via TPM 1.2 way ... 
+Returned: edu.mit.csail.tpmj.structs.TPM_CAP_VERSION_INFO: 00 30 01 02 01 00 00 02 00 49 46 58 00 00 00
+tag: 0x30
+version: edu.mit.csail.tpmj.structs.TPM_VERSION: 01 02 01 00
+specLevel: 0x2
+errataRev: 0x0
+tpmVendorID: 0x49465800
+vendorSpecificSize: 0x0
+vendorSpecific: 
+
+----
+
+Getting TPM Flags (TPM 1.2 only) ... 
+Getting TPM Permanent Flags ... 
+Returned: TPM_PERMANENT_FLAGS:
+disable: false
+ownership: true
+deactivated: false
+readPubek: true
+disableOwnerClear: false
+allowMaintenance: false
+physicalPresenceLifetimeLock: true
+physicalPresenceHWEnable: false
+physicalPresenceCMDEnable: true
+CEKPUsed: false
+TPMpost: false
+TPMpostLock: false
+FIPS: false
+operator: false
+enableRevokeEK: false
+nvLocked: true
+readSRKPub: false
+tpmEstablished: false
+
+Getting TPM Volatile Flags ... 
+Returned: TPM_STCLEAR_FLAGS:
+deactivated: false
+disableForceClear: false
+physicalPresence: false
+physicalPresenceLock: false
+bGlobalLock: false
+
+----
+
+Reading Public Endorsement Key using TPM_OwnerReadInternalPub (TPM 1.2 only) ...
+Error: java.lang.IllegalArgumentException: TPMAdminFuncs.TPM_OwnerReadInternalPub: ownerAuth can't be null.
+Reading Public Endorsement Key using TPM_ReadPubek ...
+(using all-zeros as nonce)
+Public Endorsement Key:
+TPM_PUBKEY: 
+algorithmParms = TPM_KEY_PARMS: algorithmID= 0x1, encScheme= 0x3, sigScheme= 0x1
+Parm (12 bytes):
+TPM_RSA_KEY_PARMS: keyLength=2048, numPrimes=2, exponent (0 bytes): 
+pubKey: TPM_STORE_PUBKEY (256 bytes): 
+e9 cf 56 66 a0 b5 1a 47 4d 8d 9a 6c 1a f5 b3 1c 9d 29 e5 5f
+72 c6 5c fb 2a 44 a4 0b 78 03 5c 04 92 ec ed 76 b4 6e c0 27
+57 2b 46 ca 76 93 86 aa 65 69 d9 e9 8c af 19 02 56 7b c3 f9
+e7 20 b0 59 2d c1 84 53 d0 e7 a1 28 b0 f6 b8 13 18 2d 8e 15
+67 34 a6 ca 3c d9 15 a7 63 1f 75 6c 6e 9c e6 f9 00 22 7a 2c
+bc f8 ff 17 9b d6 81 b2 4f 7f b7 9a df 0b 10 c7 16 6d 99 73
+59 dd b5 82 0b fa 18 5b 4e 04 82 44 f7 5c e7 d5 7e 8d 87 3d
+c0 0c d3 cc bb 8a 78 e5 7b 8d 1a 5a ed 5d 8a fa ef 99 fa 71
+ae 6c 18 0e a6 ba d2 c8 a7 21 43 1e 61 d6 ae fc bc 83 d4 d8
+e6 99 19 6e d6 d0 61 40 e0 0f 35 91 20 63 2c b7 a4 1b aa 15
+d2 8d 05 25 3c fa ce a0 d8 40 69 55 6f c1 a9 8b 30 f0 d5 d5
+ac e3 ca 5a 9c 74 cd 57 d5 ed 19 db 4a b9 32 e9 cc 22 75 19
+86 fb c1 09 97 6a c9 d9 92 6e 86 dd 6a 92 53 d5
+
+----
+
+
+Getting number of PCRS: 
+numPcrs = 24
+Reading PCRs
+PCR 0: 0000000000000000000000000000000000000000
+PCR 1: 0000000000000000000000000000000000000000
+PCR 2: 0000000000000000000000000000000000000000
+PCR 3: 0000000000000000000000000000000000000000
+PCR 4: 0000000000000000000000000000000000000000
+PCR 5: 0000000000000000000000000000000000000000
+PCR 6: 0000000000000000000000000000000000000000
+PCR 7: 0000000000000000000000000000000000000000
+PCR 8: 0000000000000000000000000000000000000000
+PCR 9: 0000000000000000000000000000000000000000
+PCR 10: 0000000000000000000000000000000000000000
+PCR 11: 0000000000000000000000000000000000000000
+PCR 12: 0000000000000000000000000000000000000000
+PCR 13: 0000000000000000000000000000000000000000
+PCR 14: 0000000000000000000000000000000000000000
+PCR 15: 0000000000000000000000000000000000000000
+PCR 16: 0000000000000000000000000000000000000000
+PCR 17: ffffffffffffffffffffffffffffffffffffffff
+PCR 18: ffffffffffffffffffffffffffffffffffffffff
+PCR 19: ffffffffffffffffffffffffffffffffffffffff
+PCR 20: ffffffffffffffffffffffffffffffffffffffff
+PCR 21: ffffffffffffffffffffffffffffffffffffffff
+PCR 22: ffffffffffffffffffffffffffffffffffffffff
+PCR 23: 0000000000000000000000000000000000000000
+----
+
+Reading Key handles TPM 1.1 style
+TPM_KEY_HANDLES_LIST: 0 loaded handles
+
+----
+
+Reading KEY handles (TPM 1.2 style) ...
+(0 handles):
+
+----
+
+Reading CONTEXT handles (TPM 1.2 style) ...
+(0 handles):
+
+----
+
+Reading AUTH SESSION handles (TPM 1.2 style) ...
+(0 handles):
+
+----
+
+Reading TRANSPORT SESSION handles (TPM 1.2 style) ...
+(0 handles):
+
+----
+
+Reading monotonic counters (TPM 1.2 only) ...
+(0 counters):
+
+----
+</pre>
+
+
+
+
+<h4>Taking Ownership</h4>
+
+Without needing to reboot, you can now take ownership of your TPM.
+The following takes ownership using "tpmowner" as the password,
+and a "null" for the SRK password.  Under TPM/J, using a "null"
+for a key authorization password specifies that
+authorization is not required for the key
+(i.e., in the case of TPM commands that require key authorization,
+the command can be used without using an OIAP or OSAP authorization).
+In cases where authorization is required, 20-bytes of zeroes
+is used.
+<pre>
+LFGSMACMINI:~/tpm/tpmjdemo lfgs$ sudo java edu.mit.csail.tpmj.tools.TPMTakeOwnership tpmowner
+
+Parsing command-line arguments ...
+
+ownerPwd = tpmowner, Encoded (Infineon/Vista (SHA1 of UTF16LE without null terminator) = 4ddb6f65c4d692cab6e3df8b7546228855578946
+srkPwd = null, Encoded (NULL [no authorization]) = null
+Executing TPM_SelfTestFull() ... 
+Done in 882 ms.
+Executing TPM_GetTestResult() ... 
+Done in 27 ms.
+Results: ff ff
+keyInfo: Tag: 0x101
+Fill: 0x0
+Key Usage: 0x11
+Key Flags: 0x0
+AuthDataUsage: 0x0
+algorithmParms: TPM_KEY_PARMS: algorithmID= 0x1, encScheme= 0x3, sigScheme= 0x1
+Parm (12 bytes):
+TPM_RSA_KEY_PARMS: keyLength=2048, numPrimes=2, exponent (0 bytes): 
+PCRInfo (0 bytes): 
+pubKey: TPM_STORE_PUBKEY (0 bytes): 
+encData (0 bytes): 
+
+Reading pub EK ... 
+Public Endorsement Key: TPM_PUBKEY: 
+algorithmParms = TPM_KEY_PARMS: algorithmID= 0x1, encScheme= 0x3, sigScheme= 0x1
+Parm (12 bytes):
+TPM_RSA_KEY_PARMS: keyLength=2048, numPrimes=2, exponent (0 bytes): 
+pubKey: TPM_STORE_PUBKEY (256 bytes): 
+e9 cf 56 66 a0 b5 1a 47 4d 8d 9a 6c 1a f5 b3 1c 9d 29 e5 5f
+72 c6 5c fb 2a 44 a4 0b 78 03 5c 04 92 ec ed 76 b4 6e c0 27
+57 2b 46 ca 76 93 86 aa 65 69 d9 e9 8c af 19 02 56 7b c3 f9
+e7 20 b0 59 2d c1 84 53 d0 e7 a1 28 b0 f6 b8 13 18 2d 8e 15
+67 34 a6 ca 3c d9 15 a7 63 1f 75 6c 6e 9c e6 f9 00 22 7a 2c
+bc f8 ff 17 9b d6 81 b2 4f 7f b7 9a df 0b 10 c7 16 6d 99 73
+59 dd b5 82 0b fa 18 5b 4e 04 82 44 f7 5c e7 d5 7e 8d 87 3d
+c0 0c d3 cc bb 8a 78 e5 7b 8d 1a 5a ed 5d 8a fa ef 99 fa 71
+ae 6c 18 0e a6 ba d2 c8 a7 21 43 1e 61 d6 ae fc bc 83 d4 d8
+e6 99 19 6e d6 d0 61 40 e0 0f 35 91 20 63 2c b7 a4 1b aa 15
+d2 8d 05 25 3c fa ce a0 d8 40 69 55 6f c1 a9 8b 30 f0 d5 d5
+ac e3 ca 5a 9c 74 cd 57 d5 ed 19 db 4a b9 32 e9 cc 22 75 19
+86 fb c1 09 97 6a c9 d9 92 6e 86 dd 6a 92 53 d5
+
+encOwnerAuth = 
+15 5d b0 68 6a d8 07 30 6d 24 fc 72 5c 98 ba 18 9c 4c dd ab
+7d b8 c6 cb 24 9e ae 98 ed d1 54 9e ee 82 60 1a 7e 9c 0f ef
+3f 20 91 f1 f9 57 47 72 b6 37 44 0a 0b c4 24 a3 43 33 f5 3b
+6d d6 a4 9e f8 83 32 a6 cb 15 c5 3c 7b fc 33 23 68 66 b0 5c
+04 02 ee e9 56 1d 48 89 76 39 08 43 08 35 80 3b c4 c6 56 ca
+05 07 02 77 40 8a 70 3c 55 ec d6 8e cf f6 64 b6 84 65 9b 7d
+46 9c fc 0e 97 c7 95 e6 4d dc 79 f0 75 9a ba 8f 0a 63 71 fe
+f9 55 3f a1 99 aa 49 8a c8 d9 47 c2 68 b7 46 30 e8 1a 12 6c
+51 32 1d 05 be 98 ff 55 79 68 67 5e 45 b5 c4 a4 a1 40 c8 33
+c1 d0 dc ad 5f c2 09 7b 92 a6 11 a8 ac 53 b9 36 10 f1 6a da
+7f fd dd 79 a4 18 a9 ca 59 8d 48 2c 0a 51 59 fe b0 74 ea c2
+00 78 0d 75 1e 67 05 e8 3a be 72 50 8c 04 06 a1 9d 06 29 65
+07 7d 28 4d cf 5d d5 c0 2e 29 6b 98 45 e1 b6 99
+
+encSrkAuth = 
+aa 15 08 d3 2e a7 ed a0 16 74 62 34 69 35 c1 3c 66 96 30 fb
+c7 52 a7 a7 0d fd 26 46 46 5b 40 8b 4d a6 fc 1b ef 09 42 7b
+40 ee d3 5d a2 6a 47 68 2e db 0f fb 1b 9d 57 08 e5 80 2b 4e
+68 f0 b9 c6 b8 08 e4 86 40 cf 17 07 bf 12 d6 00 c4 1f 91 fe
+ae f5 ee ac 2c 94 4e bf 44 8f ed e7 63 36 9d a4 d1 88 f2 de
+77 7d 33 f2 40 34 70 30 41 6e 2c 08 c2 8c 9d 16 c6 cb 38 5e
+3e 75 42 ca 85 25 88 dd 7c 3b 57 e4 67 29 9c d9 0b 6e 13 4d
+02 e6 80 d5 0c 84 e8 e8 04 05 99 cc 3a ef 9a 54 3b 19 c6 d9
+58 0b b5 86 fb e4 4a b9 81 95 6f c7 c8 68 56 77 fd 47 e0 d2
+ed 76 ed d4 c6 51 f8 63 d3 2d f2 0e d9 be a3 52 ce 20 e6 74
+1a 4a cc 16 42 ba 3d 98 b2 cc f5 02 ad 04 e0 76 d6 3a bd 6c
+09 0d b8 19 0a 65 37 a3 bd 11 2a b9 62 e9 47 2a f7 12 18 ea
+d1 d4 36 dd c0 87 75 5f 0d ab 44 71 09 e4 d7 0d
+
+Executing take ownership command ... 
+Returned srk pub: Tag: 0x101
+Fill: 0x0
+Key Usage: 0x11
+Key Flags: 0x0
+AuthDataUsage: 0x0
+algorithmParms: TPM_KEY_PARMS: algorithmID= 0x1, encScheme= 0x3, sigScheme= 0x1
+Parm (12 bytes):
+TPM_RSA_KEY_PARMS: keyLength=2048, numPrimes=2, exponent (0 bytes): 
+PCRInfo (0 bytes): 
+pubKey: TPM_STORE_PUBKEY (256 bytes): 
+8f 4f 24 bd 5b 39 80 56 1c e2 9f d6 6d 0f 8d 1f 38 09 c4 c3
+99 f2 50 41 f4 cd fc 63 ef 0d 20 46 79 4b e9 7f 9e 6c 25 7a
+62 50 b7 1a 5c bf a8 ce 7f d0 a5 e4 23 81 42 cc 6c 0d 52 28
+c6 dd 93 e7 7b 1a ba 56 7f 18 bd c8 62 1f a6 44 3d e2 a7 b6
+23 8b 38 1c 9f 52 39 d4 34 91 d0 4f 57 17 cc 74 eb f8 26 c7
+ee 91 76 3a 1e 0d 06 9b 26 88 5c d3 5e 4e 5f 82 6f b0 1d c2
+dc 89 0c c5 8b 57 c6 d1 56 32 8b 55 33 82 fe fc ee 75 d2 cf
+96 26 a5 b0 05 0c 87 7c dd bb 6b 74 1d d1 4d 24 20 44 49 ab
+11 b5 08 d4 1b a7 7a d7 20 9f a0 c4 85 50 0b fd ef 56 5e 12
+a6 42 46 a7 eb a9 8a dd 34 cb dc d5 bb be c2 a1 ca 3f a7 2a
+a1 2d a4 83 be 45 55 79 1b d2 fb 72 0f 29 29 c0 d7 a1 50 de
+4f 50 bd 38 a3 b0 38 66 f1 e1 51 4d 46 89 28 12 c0 a7 a7 4d
+a9 8b 9c e2 90 ac 1c eb 43 6a 96 e2 2d 81 15 9d
+
+encData (0 bytes): 
+
+Equal to blob? true
+Writing srk.pubkey ...
+LFGSMACMINI:~/tpm/tpmjdemo lfgs$ ls -l
+total 8
+-rw-r--r--   1 root  lfgs  303 Mar 30 17:37 srk.pubkey
+LFGSMACMINI:~/tpm/tpmjdemo lfgs$ 
+</pre>
+
+Running TPMInfo again (this time with owner password):
+<pre>
+LFGSMACMINI:~/tpm/tpmjdemo lfgs$ sudo java edu.mit.csail.tpmj.tools.TPMInfo tpmowner
+ownerPwd = tpmowner, Encoded (Infineon/Vista (SHA1 of UTF16LE without null terminator) = 4ddb6f65c4d692cab6e3df8b7546228855578946
+
+*****
+Getting manufacturer ID ... 
+TPM VENDOR ID = 0x49465800 (IFX)
+----
+
+Getting version via TPM 1.1 way ... 
+Returned: edu.mit.csail.tpmj.structs.TPM_STRUCT_VER: 01 01 00 00
+
+----
+
+Getting version via TPM 1.2 way ... 
+Returned: edu.mit.csail.tpmj.structs.TPM_CAP_VERSION_INFO: 00 30 01 02 01 00 00 02 00 49 46 58 00 00 00
+tag: 0x30
+version: edu.mit.csail.tpmj.structs.TPM_VERSION: 01 02 01 00
+specLevel: 0x2
+errataRev: 0x0
+tpmVendorID: 0x49465800
+vendorSpecificSize: 0x0
+vendorSpecific: 
+
+----
+
+Getting TPM Flags (TPM 1.2 only) ... 
+Getting TPM Permanent Flags ... 
+Returned: TPM_PERMANENT_FLAGS:
+disable: false
+ownership: true
+deactivated: false
+readPubek: false
+disableOwnerClear: false
+allowMaintenance: false
+physicalPresenceLifetimeLock: true
+physicalPresenceHWEnable: false
+physicalPresenceCMDEnable: true
+CEKPUsed: false
+TPMpost: false
+TPMpostLock: false
+FIPS: false
+operator: false
+enableRevokeEK: false
+nvLocked: true
+readSRKPub: false
+tpmEstablished: false
+
+Getting TPM Volatile Flags ... 
+Returned: TPM_STCLEAR_FLAGS:
+deactivated: false
+disableForceClear: false
+physicalPresence: false
+physicalPresenceLock: false
+bGlobalLock: false
+
+----
+
+Reading Public Endorsement Key using TPM_OwnerReadInternalPub (TPM 1.2 only) ...
+Public Endorsement Key:
+TPM_PUBKEY: 
+algorithmParms = TPM_KEY_PARMS: algorithmID= 0x1, encScheme= 0x3, sigScheme= 0x1
+Parm (12 bytes):
+TPM_RSA_KEY_PARMS: keyLength=2048, numPrimes=2, exponent (0 bytes): 
+pubKey: TPM_STORE_PUBKEY (256 bytes): 
+e9 cf 56 66 a0 b5 1a 47 4d 8d 9a 6c 1a f5 b3 1c 9d 29 e5 5f
+72 c6 5c fb 2a 44 a4 0b 78 03 5c 04 92 ec ed 76 b4 6e c0 27
+57 2b 46 ca 76 93 86 aa 65 69 d9 e9 8c af 19 02 56 7b c3 f9
+e7 20 b0 59 2d c1 84 53 d0 e7 a1 28 b0 f6 b8 13 18 2d 8e 15
+67 34 a6 ca 3c d9 15 a7 63 1f 75 6c 6e 9c e6 f9 00 22 7a 2c
+bc f8 ff 17 9b d6 81 b2 4f 7f b7 9a df 0b 10 c7 16 6d 99 73
+59 dd b5 82 0b fa 18 5b 4e 04 82 44 f7 5c e7 d5 7e 8d 87 3d
+c0 0c d3 cc bb 8a 78 e5 7b 8d 1a 5a ed 5d 8a fa ef 99 fa 71
+ae 6c 18 0e a6 ba d2 c8 a7 21 43 1e 61 d6 ae fc bc 83 d4 d8
+e6 99 19 6e d6 d0 61 40 e0 0f 35 91 20 63 2c b7 a4 1b aa 15
+d2 8d 05 25 3c fa ce a0 d8 40 69 55 6f c1 a9 8b 30 f0 d5 d5
+ac e3 ca 5a 9c 74 cd 57 d5 ed 19 db 4a b9 32 e9 cc 22 75 19
+86 fb c1 09 97 6a c9 d9 92 6e 86 dd 6a 92 53 d5
+
+----
+
+
+Getting number of PCRS: 
+numPcrs = 24
+Reading PCRs
+PCR 0: 0000000000000000000000000000000000000000
+PCR 1: 0000000000000000000000000000000000000000
+PCR 2: 0000000000000000000000000000000000000000
+PCR 3: 0000000000000000000000000000000000000000
+PCR 4: 0000000000000000000000000000000000000000
+PCR 5: 0000000000000000000000000000000000000000
+PCR 6: 0000000000000000000000000000000000000000
+PCR 7: 0000000000000000000000000000000000000000
+PCR 8: 0000000000000000000000000000000000000000
+PCR 9: 0000000000000000000000000000000000000000
+PCR 10: 0000000000000000000000000000000000000000
+PCR 11: 0000000000000000000000000000000000000000
+PCR 12: 0000000000000000000000000000000000000000
+PCR 13: 0000000000000000000000000000000000000000
+PCR 14: 0000000000000000000000000000000000000000
+PCR 15: 0000000000000000000000000000000000000000
+PCR 16: 0000000000000000000000000000000000000000
+PCR 17: ffffffffffffffffffffffffffffffffffffffff
+PCR 18: ffffffffffffffffffffffffffffffffffffffff
+PCR 19: ffffffffffffffffffffffffffffffffffffffff
+PCR 20: ffffffffffffffffffffffffffffffffffffffff
+PCR 21: ffffffffffffffffffffffffffffffffffffffff
+PCR 22: ffffffffffffffffffffffffffffffffffffffff
+PCR 23: 0000000000000000000000000000000000000000
+----
+
+Reading Key handles TPM 1.1 style
+TPM_KEY_HANDLES_LIST: 0 loaded handles
+
+----
+
+Reading KEY handles (TPM 1.2 style) ...
+(0 handles):
+
+----
+
+Reading CONTEXT handles (TPM 1.2 style) ...
+(0 handles):
+
+----
+
+Reading AUTH SESSION handles (TPM 1.2 style) ...
+(0 handles):
+
+----
+
+Reading TRANSPORT SESSION handles (TPM 1.2 style) ...
+(0 handles):
+
+----
+
+Reading monotonic counters (TPM 1.2 only) ...
+(0 counters):
+
+----
+</pre>
+
+<h4>Create an AIK</h4>
+
+<pre>
+LFGSMACMINI:~/tpm/tpmjdemo lfgs$ sudo java edu.mit.csail.tpmj.tools.TPMCreateAIK aik.key test 0x1234567890123456789012345678901234567890 tpmowner
+
+Parsing command-line arguments ...
+
+aikPwd = test, Encoded (Infineon/Vista (SHA1 of UTF16LE without null terminator) = 87f8ed9157125ffc4da9e06a7b8011ad80a53fe1
+labelPrivCA = 0x1234567890123456789012345678901234567890, Encoded (Hex) = 1234567890123456789012345678901234567890
+ownerPwd = tpmowner, Encoded (Infineon/Vista (SHA1 of UTF16LE without null terminator) = 4ddb6f65c4d692cab6e3df8b7546228855578946
+srkPwd = null, Encoded (NULL [no authorization]) = null
+Executing TPM_SelfTestFull() ... 
+Done in 882 ms.
+Executing TPM_GetTestResult() ... 
+Done in 27 ms.
+Results: ff ff
+Creating Identity Key ... 
+DONE.
+
+ID KEY = Tag: 0x101
+Fill: 0x0
+Key Usage: 0x12
+Key Flags: 0x0
+AuthDataUsage: 0x1
+algorithmParms: TPM_KEY_PARMS: algorithmID= 0x1, encScheme= 0x1, sigScheme= 0x2
+Parm (12 bytes):
+TPM_RSA_KEY_PARMS: keyLength=2048, numPrimes=2, exponent (0 bytes): 
+PCRInfo (0 bytes): 
+pubKey: TPM_STORE_PUBKEY (256 bytes): 
+8f 0a 65 2e c1 64 96 87 10 35 f2 56 65 82 cc eb 82 6f 81 b6
+4c 86 a2 92 9d 99 8e a9 a2 2e a6 35 47 62 e2 f7 1a 4e 9b a2
+f0 e6 3c 5d 83 57 84 02 1b 3f bb 2b 3c 00 92 51 36 4c f8 9c
+45 88 cd 81 fc 18 b5 25 e7 45 7c 91 44 04 29 85 16 3a f0 cd
+4c 85 3b 76 78 03 8f 12 c1 a9 34 dc d4 2b f4 ac f1 99 d0 39
+19 d3 fc 20 e7 88 41 cb c1 e1 e8 1e d9 1f fc 5c bf 68 d2 17
+a4 1e 14 7f 02 a5 5e 53 7f 59 d7 f3 cc a8 6d 50 f5 fa ad ed
+e1 3f cf 92 7a 60 c7 e5 65 01 56 61 ee 1c 34 9b 7f f6 e0 12
+f9 8f f5 d1 85 70 74 db a3 0b 27 37 c7 f9 1c 77 f0 4b b9 a1
+2d 30 0b 96 fe ff 4b 68 8b 44 90 97 fc 2d a3 74 66 19 72 f3
+fc b9 b9 83 0b 6b 99 4d 12 a3 33 53 86 cb a2 ac 49 7f 3c 06
+8c 56 1d 86 d6 71 1a 63 13 13 c9 cd 6c 1f 55 7a ed 38 3c 94
+9c d4 07 15 25 35 d3 d4 4c e6 c2 04 29 3e 06 8d
+
+encData (256 bytes): 
+66 70 bc f3 87 53 17 d8 4b 7a e6 df 54 d4 16 d6 c0 8c 81 bb
+e1 20 65 d2 67 fb a8 2e 77 78 7a 7d 2e 3b 80 cb 87 7f b7 4b
+22 f7 01 57 82 94 bb d5 20 b1 90 a8 71 d2 3e f5 b5 a0 0f 4d
+5a 57 5e 8d 04 a7 a8 bc c3 d1 e2 25 b2 27 9e 1a 82 a8 44 35
+42 fe 68 60 9c a4 9a 16 bf b2 7d e0 11 eb 2c d6 02 16 44 21
+96 f1 46 b9 85 45 0c 55 7d 05 e1 77 9d 1a c5 ec d7 db 2a d1
+02 2c 4f 08 2e ad 1f f4 e6 9e 3a aa 08 b9 31 47 bb 62 24 20
+ac 5d 16 c1 38 9a 43 79 ba e2 f6 04 73 b9 3c 94 d2 db 1d b2
+ef 24 49 2e 50 de 44 e2 41 d4 71 78 a2 04 7e 6c f0 5e 63 ec
+6c 55 1f 2b 24 e1 b8 a5 dd 65 a9 40 c9 1f 09 a6 50 06 3b 3f
+cf 06 40 4a 3d ca a7 f0 bf 84 bb 40 8b be 73 59 36 24 7e 6f
+6c 7f c0 eb 02 8b b4 58 45 e6 2c 63 be be f9 9d 65 d8 07 a0
+50 6b 7f ed 45 b2 bc 56 ec ae 81 35 33 7e d9 53
+
+
+
+Identity Binding = (256 bytes):
+
+74 a3 7d 77 2d 09 1c 4f 7a 66 d4 7f 91 f1 ff e1 c5 b8 95 49
+0c 1a f0 6f da 95 d5 76 21 08 c6 b2 2a d7 3f 3c ed d1 f1 a8
+16 7d f2 25 d2 d3 88 93 ee f7 88 fc c9 9d 75 6c e2 b1 c4 a8
+90 53 d9 51 d2 0b 13 aa e4 e4 0f e3 05 02 93 49 9e 4e 85 76
+43 a3 db e9 e4 e5 c1 64 ce 36 7e 41 ea db 12 8a 74 43 8f 3b
+22 b0 f1 dd be 23 fd a5 0f 41 58 88 0e 16 32 63 3d 04 e7 7f
+00 f8 7a 8c 79 67 b4 4b 45 48 b0 23 7c e7 5e 50 f7 f8 a5 ca
+16 3f 3d de 79 75 ed 79 43 e0 f3 35 84 5b 8e f5 38 05 e6 60
+b5 24 65 96 b0 ea 34 ea 5f 4a aa 7d 72 5d e8 47 51 6b 39 81
+e4 16 3a 98 40 40 af 01 dc e3 e0 84 d8 ca 51 d3 d7 df 00 40
+45 f2 b7 0a 67 ec 87 ee 26 c6 d7 a7 b6 f2 a7 42 a6 c5 89 74
+86 b7 b3 98 50 2e 26 6a cc 3b 1e 36 8b 84 9c cb f1 a7 d4 e3
+b0 73 a8 8e b4 e8 67 14 86 f3 44 2d 43 18 2a bb
+
+Writing aik.key ...
+
+
+ **** NOW TESTING THE NEW AIK ****
+
+Reading aik.key ...
+buf == blob?true
+Key from file: Tag: 0x101
+Fill: 0x0
+Key Usage: 0x12
+Key Flags: 0x0
+AuthDataUsage: 0x1
+algorithmParms: TPM_KEY_PARMS: algorithmID= 0x1, encScheme= 0x1, sigScheme= 0x2
+Parm (12 bytes):
+TPM_RSA_KEY_PARMS: keyLength=2048, numPrimes=2, exponent (0 bytes): 
+PCRInfo (0 bytes): 
+pubKey: TPM_STORE_PUBKEY (256 bytes): 
+8f 0a 65 2e c1 64 96 87 10 35 f2 56 65 82 cc eb 82 6f 81 b6
+4c 86 a2 92 9d 99 8e a9 a2 2e a6 35 47 62 e2 f7 1a 4e 9b a2
+f0 e6 3c 5d 83 57 84 02 1b 3f bb 2b 3c 00 92 51 36 4c f8 9c
+45 88 cd 81 fc 18 b5 25 e7 45 7c 91 44 04 29 85 16 3a f0 cd
+4c 85 3b 76 78 03 8f 12 c1 a9 34 dc d4 2b f4 ac f1 99 d0 39
+19 d3 fc 20 e7 88 41 cb c1 e1 e8 1e d9 1f fc 5c bf 68 d2 17
+a4 1e 14 7f 02 a5 5e 53 7f 59 d7 f3 cc a8 6d 50 f5 fa ad ed
+e1 3f cf 92 7a 60 c7 e5 65 01 56 61 ee 1c 34 9b 7f f6 e0 12
+f9 8f f5 d1 85 70 74 db a3 0b 27 37 c7 f9 1c 77 f0 4b b9 a1
+2d 30 0b 96 fe ff 4b 68 8b 44 90 97 fc 2d a3 74 66 19 72 f3
+fc b9 b9 83 0b 6b 99 4d 12 a3 33 53 86 cb a2 ac 49 7f 3c 06
+8c 56 1d 86 d6 71 1a 63 13 13 c9 cd 6c 1f 55 7a ed 38 3c 94
+9c d4 07 15 25 35 d3 d4 4c e6 c2 04 29 3e 06 8d
+
+encData (256 bytes): 
+66 70 bc f3 87 53 17 d8 4b 7a e6 df 54 d4 16 d6 c0 8c 81 bb
+e1 20 65 d2 67 fb a8 2e 77 78 7a 7d 2e 3b 80 cb 87 7f b7 4b
+22 f7 01 57 82 94 bb d5 20 b1 90 a8 71 d2 3e f5 b5 a0 0f 4d
+5a 57 5e 8d 04 a7 a8 bc c3 d1 e2 25 b2 27 9e 1a 82 a8 44 35
+42 fe 68 60 9c a4 9a 16 bf b2 7d e0 11 eb 2c d6 02 16 44 21
+96 f1 46 b9 85 45 0c 55 7d 05 e1 77 9d 1a c5 ec d7 db 2a d1
+02 2c 4f 08 2e ad 1f f4 e6 9e 3a aa 08 b9 31 47 bb 62 24 20
+ac 5d 16 c1 38 9a 43 79 ba e2 f6 04 73 b9 3c 94 d2 db 1d b2
+ef 24 49 2e 50 de 44 e2 41 d4 71 78 a2 04 7e 6c f0 5e 63 ec
+6c 55 1f 2b 24 e1 b8 a5 dd 65 a9 40 c9 1f 09 a6 50 06 3b 3f
+cf 06 40 4a 3d ca a7 f0 bf 84 bb 40 8b be 73 59 36 24 7e 6f
+6c 7f c0 eb 02 8b b4 58 45 e6 2c 63 be be f9 9d 65 d8 07 a0
+50 6b 7f ed 45 b2 bc 56 ec ae 81 35 33 7e d9 53
+
+
+Loading the key into the TPM ...
+keyHandle = 0x5ab0be0
+Reading the public key ... 
+PubKey=TPM_PUBKEY: 
+algorithmParms = TPM_KEY_PARMS: algorithmID= 0x1, encScheme= 0x1, sigScheme= 0x2
+Parm (12 bytes):
+TPM_RSA_KEY_PARMS: keyLength=2048, numPrimes=2, exponent (0 bytes): 
+pubKey: TPM_STORE_PUBKEY (256 bytes): 
+8f 0a 65 2e c1 64 96 87 10 35 f2 56 65 82 cc eb 82 6f 81 b6
+4c 86 a2 92 9d 99 8e a9 a2 2e a6 35 47 62 e2 f7 1a 4e 9b a2
+f0 e6 3c 5d 83 57 84 02 1b 3f bb 2b 3c 00 92 51 36 4c f8 9c
+45 88 cd 81 fc 18 b5 25 e7 45 7c 91 44 04 29 85 16 3a f0 cd
+4c 85 3b 76 78 03 8f 12 c1 a9 34 dc d4 2b f4 ac f1 99 d0 39
+19 d3 fc 20 e7 88 41 cb c1 e1 e8 1e d9 1f fc 5c bf 68 d2 17
+a4 1e 14 7f 02 a5 5e 53 7f 59 d7 f3 cc a8 6d 50 f5 fa ad ed
+e1 3f cf 92 7a 60 c7 e5 65 01 56 61 ee 1c 34 9b 7f f6 e0 12
+f9 8f f5 d1 85 70 74 db a3 0b 27 37 c7 f9 1c 77 f0 4b b9 a1
+2d 30 0b 96 fe ff 4b 68 8b 44 90 97 fc 2d a3 74 66 19 72 f3
+fc b9 b9 83 0b 6b 99 4d 12 a3 33 53 86 cb a2 ac 49 7f 3c 06
+8c 56 1d 86 d6 71 1a 63 13 13 c9 cd 6c 1f 55 7a ed 38 3c 94
+9c d4 07 15 25 35 d3 d4 4c e6 c2 04 29 3e 06 8d
+
+Trying TPM_Quote of PCR 0 ... 
+output=TPM_QuoteOutput (data params only):
+PCRData = 
+TPM_PCR_COMPOSITE:
+select = TPM_PCR_SELECTION for 24 PCRs: 0 (0x010000)
+PcrValues (numValues=1, valueSize=20): 
+0000000000000000000000000000000000000000
+
+Signature (256 bytes): 78c0602aa43146252fe9a01c665925024d35866b3cda4c54d7dd583ff0471be47e231512af10b1798d4da56c9188c56b46935052f5d87319f500f65a74d5d0d1ba28cf126c4c3f9721235a8c9475a516e163c1b4fd2b2e24daaecdde05e63ce51dba7e3477e53f5e3164232d1aaeca6f15b28edc586d1487425ad8a4ea50510c9715d895f410a92c30b46418d70108e51c1031ce3198f4f6c1950729d96fa41099321ecf045d9e48b4286f1ea72530275f70a0bad41a94b17ab2b2c6d09cd12ec01ea0ac3dd2eb38d49dd7823230bc8f107198880511bc208d3ebe0ba231465851370fb1af875095339c95a3af3e55af8d1bbff383ccb2b9aed80d7f8819dcf1
+Verifying signature by software ... 
+OK? true
+
+
+ **** NOW TESTING SIGNING OF ARBITRARY DATA (THIS SHOULD FAIL!) ****
+
+Trying to sign 'Hello World!' ... (THIS SHOULD FAIL)
+TPM Exception: edu.mit.csail.tpmj.TPMErrorReturnCodeException
+Occured on input: edu.mit.csail.tpmj.commands.TPM_Sign: 
+00 c2 00 00 00 53 00 00 00 3c 05 ab 0b e0 00 00 00 14 2e f7
+bd e6 08 ce 54 04 e9 7d 5f 04 2f 95 f8 9f 1c 23 28 71 00 47
+13 51 f6 f2 60 9d a9 06 d5 c9 a3 cc 86 73 4f 84 75 74 87 59
+1c 0f 00 93 73 c4 f8 e2 6d 5e 3a b9 f5 cc 6d b9 81 6c 22 b2
+53 cf ff
+
+Output (if any): edu.mit.csail.tpmj.structs.ByteArrayTPMOutputStruct: 00 c4 00 00 00 0a 00 00 00 24
+Return Code (if any): 36 (TPM_INVALID_KEYUSAGE)
+
+
+Evicting keyHandle: 0x5ab0be0
+OK
+LFGSMACMINI:~/tpm/tpmjdemo lfgs$ ls -l
+total 16
+-rw-r--r--   1 root  lfgs  559 Mar 30 17:41 aik.key
+-rw-r--r--   1 root  lfgs  303 Mar 30 17:37 srk.pubkey
+LFGSMACMINI:~/tpm/tpmjdemo lfgs$ 
+</pre>
+
+<h4>Create a legacy key</h4>
+
+A legacy key is good for signing and unbinding.
+Use of such keys has been deprecated since TPM 1.2 for security reasons
+but we use it here because it is good for demo purposes.
+
+<pre>
+LFGSMACMINI:~/tpm/tpmjdemo lfgs$ sudo java edu.mit.csail.tpmj.tools.TPMCreateKey testkey.key l test SRK /m test
+Password:
+
+Parsing command-line arguments ...
+
+keyType = l
+keyPwd = test, Encoded (Infineon/Vista (SHA1 of UTF16LE without null terminator) = 87f8ed9157125ffc4da9e06a7b8011ad80a53fe1
+Using SRK as parent.
+parentPwd = null, Encoded (NULL [no authorization]) = null
+m = test, Encoded (Infineon/Vista (SHA1 of UTF16LE without null terminator) = 87f8ed9157125ffc4da9e06a7b8011ad80a53fe1
+Key will be migratable.
+
+Creating the Key ...
+Returned wrapped key: Tag: 0x101
+Fill: 0x0
+Key Usage: 0x15
+Key Flags: 0x2
+AuthDataUsage: 0x1
+algorithmParms: TPM_KEY_PARMS: algorithmID= 0x1, encScheme= 0x3, sigScheme= 0x2
+Parm (12 bytes):
+TPM_RSA_KEY_PARMS: keyLength=2048, numPrimes=2, exponent (0 bytes): 
+PCRInfo (0 bytes): 
+pubKey: TPM_STORE_PUBKEY (256 bytes): 
+83 e3 8b 2d 22 90 dc 34 79 ba 1e f7 91 3b 3e 2b 7f 5e f1 82
+eb f6 0b c2 21 5b c0 96 7a 2b 17 cf d5 8e d4 51 f5 b6 be 0d
+93 87 72 68 b0 2f 0c 96 43 56 7a 13 b6 d2 bc 79 7c bb a2 1c
+a7 d7 ae cf 32 a1 d8 6d 20 39 92 cd e1 2d 43 59 7b 21 50 4d
+91 d0 9c 16 44 af 95 12 59 ae 98 bc 27 fd 73 12 98 0c cd 78
+0a 13 c5 41 58 a7 e1 5e 6c 26 50 bd 3e 96 b8 be f9 9e c4 c4
+c8 d0 08 95 38 3d 7e 09 b0 40 1b 7f 6d 8e 88 d8 58 14 8e 38
+4f b6 16 e5 bb b4 7b e8 de 5d 49 8e fb 63 e0 2d c9 67 62 ea
+e8 6c 6f ee c3 c0 49 17 66 cc d1 fa ec 71 50 57 45 7c cc 51
+26 52 46 be 35 2f ad 14 9a 5c 90 6c 75 53 90 f0 f3 82 fe 39
+40 47 ee b7 51 00 ba 97 bf c4 77 35 24 9f 03 46 92 4c db 8d
+cc d9 d5 15 37 18 1a 78 05 f6 e1 7d 5f 49 e5 c2 f5 51 74 60
+3f 81 ee e6 5c be 36 67 39 2c 54 6b 76 fd 2c bb
+
+encData (256 bytes): 
+8e 56 c9 3a c7 84 a9 ac cf 22 f6 39 22 ba 10 7c a7 c5 23 bf
+29 fd b2 2d 0d f9 6a 87 ea 66 35 47 c4 d4 ff 89 13 79 23 e5
+59 6f 0d ad 8c 03 b5 28 10 6f 9b b5 f0 94 a2 12 08 6e 96 29
+86 5a e8 c5 a1 7b 73 d1 2f a5 ab e4 46 0b a3 2c b3 37 7c 65
+ad b3 06 d6 d4 70 0d 5f 4c 41 bb 8b c3 15 5c 44 3c b6 be 7c
+8c 73 f3 83 7d b5 65 52 f9 ce 3e e9 7b 71 53 a7 53 ee c6 c5
+0f f5 95 17 cc ae bb 7e d1 d4 7d 7e c8 c4 99 c2 e9 5d dc 3f
+ef f1 e8 05 47 ee cb cb e6 03 c0 6d 4b 33 55 aa 9a a5 07 39
+4c 81 9e e4 1b 49 cc 8c 7e 90 97 ee 53 6a 71 d9 4e 6a 56 76
+b0 36 3d 57 51 eb 3e ca 41 36 1e a5 c0 f6 92 34 0a 02 df 3d
+d3 ce ab 57 10 d2 71 5d c6 cf 70 77 93 30 28 0b c9 0b db 72
+98 a5 48 18 34 7f 9b 76 20 f1 02 ed 5d 34 ca e2 7f 97 9c 9c
+a5 e7 3d 85 ae a3 bc 37 13 27 f7 21 08 b7 e4 b4
+
+
+
+Writing testkey.key ...
+
+Loading the key into the TPM ...
+keyHandle = 0x593a015
+
+Reading the public key ... 
+PubKey=TPM_PUBKEY: 
+algorithmParms = TPM_KEY_PARMS: algorithmID= 0x1, encScheme= 0x3, sigScheme= 0x2
+Parm (12 bytes):
+TPM_RSA_KEY_PARMS: keyLength=2048, numPrimes=2, exponent (0 bytes): 
+pubKey: TPM_STORE_PUBKEY (256 bytes): 
+83 e3 8b 2d 22 90 dc 34 79 ba 1e f7 91 3b 3e 2b 7f 5e f1 82
+eb f6 0b c2 21 5b c0 96 7a 2b 17 cf d5 8e d4 51 f5 b6 be 0d
+93 87 72 68 b0 2f 0c 96 43 56 7a 13 b6 d2 bc 79 7c bb a2 1c
+a7 d7 ae cf 32 a1 d8 6d 20 39 92 cd e1 2d 43 59 7b 21 50 4d
+91 d0 9c 16 44 af 95 12 59 ae 98 bc 27 fd 73 12 98 0c cd 78
+0a 13 c5 41 58 a7 e1 5e 6c 26 50 bd 3e 96 b8 be f9 9e c4 c4
+c8 d0 08 95 38 3d 7e 09 b0 40 1b 7f 6d 8e 88 d8 58 14 8e 38
+4f b6 16 e5 bb b4 7b e8 de 5d 49 8e fb 63 e0 2d c9 67 62 ea
+e8 6c 6f ee c3 c0 49 17 66 cc d1 fa ec 71 50 57 45 7c cc 51
+26 52 46 be 35 2f ad 14 9a 5c 90 6c 75 53 90 f0 f3 82 fe 39
+40 47 ee b7 51 00 ba 97 bf c4 77 35 24 9f 03 46 92 4c db 8d
+cc d9 d5 15 37 18 1a 78 05 f6 e1 7d 5f 49 e5 c2 f5 51 74 60
+3f 81 ee e6 5c be 36 67 39 2c 54 6b 76 fd 2c bb
+
+
+Trying to sign 'Hello World!' ... 
+Signature returned (256 bytes): 052f9761d952975d45b980187f646254dba245c6f39f2092d6dad78fbecf66691921c7b30ba394aaae8cc24bd0874d01e090a18fbf267ae8d34afebb92df14fd97bae325be98e8adad1e60a6d21eb4425bc47216c1d134a1724fcc9e7df19aa8d89b2f584c0239f0fd4a930ac8756c62441667cb2ea3a57dfc986c16f8d3c519b544c02b7610da7227ea2387e0de95cc5528ecc8f2a7c8782442115230e46287983703bea6d5da713951ae332f75c912d889a1a5aadfae3f7fbf78bd57c6262551698486c895dc05cffc897d26be84ac4edaac48fd9e71ee11924801c578a34512cf7ba26ac1b902a07c7919978abe69f723dce832906befb403dccec581fd1a
+Verifying signature ... 
+Signature OK? true
+
+Binding 'Hello World!' ... 
+Encrypted Data (256 bytes): 564fad97df946973bcadbb59558e95bdcff55fb411218a28d73e6c90d7ae34216d31db7dcd81119d10679c6e3e958f946eda9025a433691e3e2810460e5335a6fd71a9ab28d4814c0414149e84c9bbe78b403de1c88cf512905983b21c07c26d2d701b4918e83c67437c243512535ec1a4a016a08598f90ae09d14345de8bb9a424de9bbf87ebe764dbd61be5451ae35303d6ebb43a3c0f48ca8eb104b678c254d1f3d65a1680f1e434d084a3a91a57ef0fa47513a4a2438a9787862533b2528f84380ac184b388fa78305c34e963bea83b5a3d333ee6f913b9901103fb641bfe1190cafd5ff90dd350e23f743f1b2174ee949be9f1d561e59a4b4497ef1b7a9
+
+UnBinding 'Hello World!' ... 
+Unbound Data returned (12 bytes): 48 65 6c 6c 6f 20 57 6f 72 6c 64 21
+Payload as string: Hello World!
+
+Evicting keyHandle: 0x593a015
+OK
+LFGSMACMINI:~/tpm/tpmjdemo lfgs$ ls -l 
+total 24
+-rw-r--r--   1 root  lfgs  559 Mar 30 17:41 aik.key
+-rw-r--r--   1 root  lfgs  303 Mar 30 17:37 srk.pubkey
+-rw-r--r--   1 root  lfgs  559 Mar 30 17:56 testkey.key
+</pre>
+
+<h4>Run TPM Self-Test if needed</h4>
+
+<p>On some TPMs (we've specifically encountered this with the Infineon
+TPM on the Intel Mac), a self-test is required before certain operations
+if a self-test has not been executed for a while.
+In this case, you will get a TPM_NEEDS_SELFTEST error (error 2049 decimal).
+When this happens, manually run a self-test.
+</p>
+
+<p>For example, here is an attempt to run TPMLoadKey after the machine has not
+been used for a long time:
+</p>
+<pre>
+LFGSMACMINI:~/tpm/tpmjdemo lfgs$ sudo java edu.mit.csail.tpmj.tools.TPMLoadKey testkey.key SRK ""
+Password:
+
+Parsing command-line arguments ...
+
+Using SRK as parent.
+parentPwd = , Encoded (All zeros) = 0000000000000000000000000000000000000000
+
+Read testkey.key ...
+
+Loading the key into the TPM ...
+TPM Exception: edu.mit.csail.tpmj.TPMErrorReturnCodeException
+Occured on input: edu.mit.csail.tpmj.commands.TPM_OIAP: 00 c1 00 00 00 0a 00 00 00 0a
+Output (if any): edu.mit.csail.tpmj.structs.ByteArrayTPMOutputStruct: 00 c4 00 00 00 0a 00 00 08 01
+Return Code (if any): 2049 (TPM_NEEDS_SELFTEST)
+</pre>
+
+<p>
+To fix this problem, we just run TPMSelfTest (under the tools.special package, not just tools):
+</p>
+<pre>
+LFGSMACMINI:~/tpm/tpmjdemo lfgs$ sudo java edu.mit.csail.tpmj.tools.special.TPMSelfTest          
+Executing TPM_SelfTestFull() ... 
+Done in 880 ms.
+Executing TPM_GetTestResult() ... 
+Done in 26 ms.
+Results: ff ff
+</pre>
+
+<p>
+After this, we are able to run the same TPMLoadKey command again, and it works (see below).
+</p>
+
+<h4>Loading a key and using it for reading and signing</h4>
+
+To use a key, you need to load it first, get the handle,
+and then use the handle for operations.
+<pre>
+LFGSMACMINI:~/tpm/tpmjdemo lfgs$ sudo java edu.mit.csail.tpmj.tools.TPMLoadKey testkey.key SRK ""
+
+Parsing command-line arguments ...
+
+Using SRK as parent.
+parentPwd = , Encoded (All zeros) = 0000000000000000000000000000000000000000
+
+Read testkey.key ...
+
+Loading the key into the TPM ...
+keyHandle = 0x5dde598
+</pre>
+
+<h5>Signing and Verifying a Data File</h5>
+
+First, we create a simple data file to sign.
+<pre>
+LFGSMACMINI:~/tpm/tpmjdemo lfgs$ echo 'Hello World!' > HelloWorld.txt
+LFGSMACMINI:~/tpm/tpmjdemo lfgs$ cat HelloWorld.txt
+Hello World!
+</pre>
+
+Then, we sign it and verify it.  Note that verifying is done completely
+in software, without using the TPM to do it.
+<pre>
+LFGSMACMINI:~/tpm/tpmjdemo lfgs$ sudo java edu.mit.csail.tpmj.tools.TPMSign HelloWorld.txt 0x5dde598 test
+Password:
+
+Parsing command-line arguments ...
+
+keyPwd = test, Encoded (Infineon/Vista (SHA1 of UTF16LE without null terminator) = 87f8ed9157125ffc4da9e06a7b8011ad80a53fe1
+
+*** Reading Data *** ... 
+Signature returned (256 bytes): 
+4f 7f be a0 f1 5f 83 20 37 84 f9 fe b3 29 62 fa d2 d7 e9 52
+d1 05 9e a6 95 2d 92 b9 57 52 c4 a1 46 8b 34 51 be 00 ab 75
+00 bf 06 fb 7c bc 61 37 8d a6 96 ef ee 32 6d f0 4c bf 9b 0d
+33 3f 73 78 73 c1 1f ff cc f7 7d ff 97 b9 11 e6 30 7f 85 3c
+d8 f1 10 3c eb a6 06 12 be 08 3b f4 ce 93 30 96 eb 05 c9 d3
+67 99 fa 4e f8 75 3b 11 80 d2 90 02 9c c3 8c a5 69 bc 5c b4
+1c 9e 42 9c 48 aa d1 47 17 e0 0e 62 fe 4e 57 61 74 b6 5c 1d
+a5 8c 33 a0 f5 29 fe f0 dd 51 05 5c ca b8 b8 39 8c df a3 2e
+03 8f ae 17 21 d2 de 02 3a 8b b6 07 84 fc 66 92 a4 15 9f 31
+08 c8 d2 b7 0b ab a5 fb a2 57 f8 5f 4c 3f 41 93 39 a6 b5 fc
+f7 c4 fd 9d 80 51 46 5f 75 5a f0 3a a8 7b bc 67 be 6c 93 62
+ba 81 33 f2 b8 f5 27 7c 36 8e c6 3e 30 84 4a 17 b7 a6 ef 81
+f4 77 aa 60 1d d6 ad 1d ad ec 9e d1 d5 07 d9 df
+
+Writing signature to file HelloWorld.txt.sig
+DONE.
+
+*** Verifying signature by software using public key ... 
+Signature OK? true
+
+LFGSMACMINI:~/tpm/tpmjdemo lfgs$ ls -l
+total 40
+-rw-r--r--   1 lfgs  lfgs   13 Apr  2 14:27 HelloWorld.txt
+-rw-r--r--   1 root  lfgs  256 Apr  2 14:28 HelloWorld.txt.sig
+-rw-r--r--   1 root  lfgs  559 Mar 30 17:41 aik.key
+-rw-r--r--   1 root  lfgs  303 Mar 30 17:37 srk.pubkey
+-rw-r--r--   1 root  lfgs  559 Mar 30 17:56 testkey.key
+
+LFGSMACMINI:~/tpm/tpmjdemo lfgs$ sudo java edu.mit.csail.tpmj.tools.TPMVerifySig HelloWorld.txt testkey.key
+
+Parsing command-line arguments ...
+
+
+*** Reading Data *** ... 
+
+*** Reading Signature from HelloWorld.txt.sig *** ... 
+
+4f 7f be a0 f1 5f 83 20 37 84 f9 fe b3 29 62 fa d2 d7 e9 52
+d1 05 9e a6 95 2d 92 b9 57 52 c4 a1 46 8b 34 51 be 00 ab 75
+00 bf 06 fb 7c bc 61 37 8d a6 96 ef ee 32 6d f0 4c bf 9b 0d
+33 3f 73 78 73 c1 1f ff cc f7 7d ff 97 b9 11 e6 30 7f 85 3c
+d8 f1 10 3c eb a6 06 12 be 08 3b f4 ce 93 30 96 eb 05 c9 d3
+67 99 fa 4e f8 75 3b 11 80 d2 90 02 9c c3 8c a5 69 bc 5c b4
+1c 9e 42 9c 48 aa d1 47 17 e0 0e 62 fe 4e 57 61 74 b6 5c 1d
+a5 8c 33 a0 f5 29 fe f0 dd 51 05 5c ca b8 b8 39 8c df a3 2e
+03 8f ae 17 21 d2 de 02 3a 8b b6 07 84 fc 66 92 a4 15 9f 31
+08 c8 d2 b7 0b ab a5 fb a2 57 f8 5f 4c 3f 41 93 39 a6 b5 fc
+f7 c4 fd 9d 80 51 46 5f 75 5a f0 3a a8 7b bc 67 be 6c 93 62
+ba 81 33 f2 b8 f5 27 7c 36 8e c6 3e 30 84 4a 17 b7 a6 ef 81
+f4 77 aa 60 1d d6 ad 1d ad ec 9e d1 d5 07 d9 df
+
+
+*** Getting the public key from testkey.key ... 
+Public key = TPM_STORE_PUBKEY (256 bytes): 
+83 e3 8b 2d 22 90 dc 34 79 ba 1e f7 91 3b 3e 2b 7f 5e f1 82
+eb f6 0b c2 21 5b c0 96 7a 2b 17 cf d5 8e d4 51 f5 b6 be 0d
+93 87 72 68 b0 2f 0c 96 43 56 7a 13 b6 d2 bc 79 7c bb a2 1c
+a7 d7 ae cf 32 a1 d8 6d 20 39 92 cd e1 2d 43 59 7b 21 50 4d
+91 d0 9c 16 44 af 95 12 59 ae 98 bc 27 fd 73 12 98 0c cd 78
+0a 13 c5 41 58 a7 e1 5e 6c 26 50 bd 3e 96 b8 be f9 9e c4 c4
+c8 d0 08 95 38 3d 7e 09 b0 40 1b 7f 6d 8e 88 d8 58 14 8e 38
+4f b6 16 e5 bb b4 7b e8 de 5d 49 8e fb 63 e0 2d c9 67 62 ea
+e8 6c 6f ee c3 c0 49 17 66 cc d1 fa ec 71 50 57 45 7c cc 51
+26 52 46 be 35 2f ad 14 9a 5c 90 6c 75 53 90 f0 f3 82 fe 39
+40 47 ee b7 51 00 ba 97 bf c4 77 35 24 9f 03 46 92 4c db 8d
+cc d9 d5 15 37 18 1a 78 05 f6 e1 7d 5f 49 e5 c2 f5 51 74 60
+3f 81 ee e6 5c be 36 67 39 2c 54 6b 76 fd 2c bb
+
+
+*** Verifying signature by software using public key ... 
+Signature OK? true
+</pre>
+
+<h5>Encrypting (Binding) and Decrypting (Unbinding) Data</h5>
+
+<pre>
+LFGSMACMINI:~/tpm/tpmjdemo lfgs$ ls -l
+total 40
+-rw-r--r--   1 lfgs  lfgs   13 Apr  2 14:27 HelloWorld.txt
+-rw-r--r--   1 root  lfgs  256 Apr  2 14:38 HelloWorld.txt.sig
+-rw-r--r--   1 root  lfgs  559 Mar 30 17:41 aik.key
+-rw-r--r--   1 root  lfgs  303 Mar 30 17:37 srk.pubkey
+-rw-r--r--   1 root  lfgs  559 Mar 30 17:56 testkey.key
+LFGSMACMINI:~/tpm/tpmjdemo lfgs$ sudo java edu.mit.csail.tpmj.tools.TPMBind HelloWorld.txt testkey.key
+
+Parsing command-line arguments ...
+
+
+*** Reading Data *** ... 
+
+*** Getting the public key from testkey.key ... 
+Public key = TPM_STORE_PUBKEY (256 bytes): 
+83 e3 8b 2d 22 90 dc 34 79 ba 1e f7 91 3b 3e 2b 7f 5e f1 82
+eb f6 0b c2 21 5b c0 96 7a 2b 17 cf d5 8e d4 51 f5 b6 be 0d
+93 87 72 68 b0 2f 0c 96 43 56 7a 13 b6 d2 bc 79 7c bb a2 1c
+a7 d7 ae cf 32 a1 d8 6d 20 39 92 cd e1 2d 43 59 7b 21 50 4d
+91 d0 9c 16 44 af 95 12 59 ae 98 bc 27 fd 73 12 98 0c cd 78
+0a 13 c5 41 58 a7 e1 5e 6c 26 50 bd 3e 96 b8 be f9 9e c4 c4
+c8 d0 08 95 38 3d 7e 09 b0 40 1b 7f 6d 8e 88 d8 58 14 8e 38
+4f b6 16 e5 bb b4 7b e8 de 5d 49 8e fb 63 e0 2d c9 67 62 ea
+e8 6c 6f ee c3 c0 49 17 66 cc d1 fa ec 71 50 57 45 7c cc 51
+26 52 46 be 35 2f ad 14 9a 5c 90 6c 75 53 90 f0 f3 82 fe 39
+40 47 ee b7 51 00 ba 97 bf c4 77 35 24 9f 03 46 92 4c db 8d
+cc d9 d5 15 37 18 1a 78 05 f6 e1 7d 5f 49 e5 c2 f5 51 74 60
+3f 81 ee e6 5c be 36 67 39 2c 54 6b 76 fd 2c bb
+
+
+*** Binding (encrypting) data using public key via software ... 
+Encrypted data (256 bytes):
+
+7d 9b c1 4d 30 55 01 9f 2d a4 58 5a 8e b9 31 d8 df fe 87 2d
+ac ba a0 79 d9 7c 95 b6 5d 5f 4a 03 fe 29 f3 98 84 b7 a7 33
+55 30 4a c7 82 cf 9c eb 72 f5 19 00 98 91 e0 e6 8e f4 86 63
+17 24 cc ff 95 46 97 b5 ce 73 b5 74 2a b8 db 0a ee b6 94 0f
+cc 0a 07 ad 0a b4 75 d5 ca a1 11 71 06 59 a4 98 f0 22 fd 5e
+54 d9 23 3e e8 d4 0a 26 df 32 57 ff 8d 82 9c af 22 52 99 7e
+af fe 3f 86 64 46 91 da a6 fd b2 70 3d 4e e3 dc 98 b3 64 3e
+88 d8 ac 2a f2 3b 05 1b e9 2c c6 9d 6d 05 ec 84 a8 0f 84 52
+ee 0a a1 12 06 a3 c9 28 7e 95 0b 27 df 98 09 99 28 f2 b1 38
+a0 75 b4 86 5a c5 c3 b2 5c bd 1a 65 88 e6 3a e6 87 44 12 7c
+47 80 2c ef cb 85 94 9c 29 ea 3b c5 ac f5 ca 84 65 6e 1f b5
+c0 f2 19 69 a1 33 ef 41 ab 29 88 c2 eb b2 34 5d e3 15 39 a3
+56 95 98 cf 1d e4 71 56 d8 07 a9 59 04 dd 58 2b
+
+Writing to file HelloWorld.txt.enc
+DONE.
+LFGSMACMINI:~/tpm/tpmjdemo lfgs$ ls -l
+total 48
+-rw-r--r--   1 lfgs  lfgs   13 Apr  2 14:27 HelloWorld.txt
+-rw-r--r--   1 root  lfgs  256 Apr  2 14:42 HelloWorld.txt.enc
+-rw-r--r--   1 root  lfgs  256 Apr  2 14:38 HelloWorld.txt.sig
+-rw-r--r--   1 root  lfgs  559 Mar 30 17:41 aik.key
+-rw-r--r--   1 root  lfgs  303 Mar 30 17:37 srk.pubkey
+-rw-r--r--   1 root  lfgs  559 Mar 30 17:56 testkey.key
+LFGSMACMINI:~/tpm/tpmjdemo lfgs$ sudo java edu.mit.csail.tpmj.tools.TPMUnbind HelloWorld.txt.enc 0x5dde598 test
+
+Parsing command-line arguments ...
+
+keyPwd = test, Encoded (Infineon/Vista (SHA1 of UTF16LE without null terminator) = 87f8ed9157125ffc4da9e06a7b8011ad80a53fe1
+
+*** Reading Encrypted Data *** ... 
+
+Unbinding using keyHandle 0x5dde598
+
+Unbound data returned (13 bytes): 48 65 6c 6c 6f 20 57 6f 72 6c 64 21 0a
+
+Writing unbound data to file HelloWorld.txt.enc.plain
+DONE.
+LFGSMACMINI:~/tpm/tpmjdemo lfgs$ cat HelloWorld.txt.enc.plain
+Hello World!
+LFGSMACMINI:~/tpm/tpmjdemo lfgs$ 
+</pre>
+
+<h4>Flushing/Evicting a Key (or other resource)</h4>
+
+<p>
+To get a list of the handles for keys and other
+resources currently active/loaded in the TPM, run TPMInfo
+(note the owner password is actually not needed for this purpose):
+</p>
+<pre>
+LFGSMACMINI:~/tpm/tpmjdemo lfgs$ sudo java edu.mit.csail.tpmj.tools.TPMInfo tpmowner                           
+Password:
+ownerPwd = tpmowner, Encoded (Infineon/Vista (SHA1 of UTF16LE without null terminator) = 4ddb6f65c4d692cab6e3df8b7546228855578946
+
+*****
+Getting manufacturer ID ... 
+TPM VENDOR ID = 0x49465800 (IFX)
+----
+
+Getting version via TPM 1.1 way ... 
+Returned: edu.mit.csail.tpmj.structs.TPM_STRUCT_VER: 01 01 00 00
+
+----
+
+Getting version via TPM 1.2 way ... 
+Returned: edu.mit.csail.tpmj.structs.TPM_CAP_VERSION_INFO: 00 30 01 02 01 00 00 02 00 49 46 58 00 00 00
+tag: 0x30
+version: edu.mit.csail.tpmj.structs.TPM_VERSION: 01 02 01 00
+specLevel: 0x2
+errataRev: 0x0
+tpmVendorID: 0x49465800
+vendorSpecificSize: 0x0
+vendorSpecific: 
+
+----
+
+Getting TPM Flags (TPM 1.2 only) ... 
+Getting TPM Permanent Flags ... 
+Returned: TPM_PERMANENT_FLAGS:
+disable: false
+ownership: true
+deactivated: false
+readPubek: false
+disableOwnerClear: false
+allowMaintenance: false
+physicalPresenceLifetimeLock: true
+physicalPresenceHWEnable: false
+physicalPresenceCMDEnable: true
+CEKPUsed: false
+TPMpost: false
+TPMpostLock: false
+FIPS: false
+operator: false
+enableRevokeEK: false
+nvLocked: true
+readSRKPub: false
+tpmEstablished: false
+
+Getting TPM Volatile Flags ... 
+Returned: TPM_STCLEAR_FLAGS:
+deactivated: false
+disableForceClear: false
+physicalPresence: false
+physicalPresenceLock: false
+bGlobalLock: false
+
+----
+
+Reading Public Endorsement Key using TPM_OwnerReadInternalPub (TPM 1.2 only) ...
+Public Endorsement Key:
+TPM_PUBKEY: 
+algorithmParms = TPM_KEY_PARMS: algorithmID= 0x1, encScheme= 0x3, sigScheme= 0x1
+Parm (12 bytes):
+TPM_RSA_KEY_PARMS: keyLength=2048, numPrimes=2, exponent (0 bytes): 
+pubKey: TPM_STORE_PUBKEY (256 bytes): 
+e9 cf 56 66 a0 b5 1a 47 4d 8d 9a 6c 1a f5 b3 1c 9d 29 e5 5f
+72 c6 5c fb 2a 44 a4 0b 78 03 5c 04 92 ec ed 76 b4 6e c0 27
+57 2b 46 ca 76 93 86 aa 65 69 d9 e9 8c af 19 02 56 7b c3 f9
+e7 20 b0 59 2d c1 84 53 d0 e7 a1 28 b0 f6 b8 13 18 2d 8e 15
+67 34 a6 ca 3c d9 15 a7 63 1f 75 6c 6e 9c e6 f9 00 22 7a 2c
+bc f8 ff 17 9b d6 81 b2 4f 7f b7 9a df 0b 10 c7 16 6d 99 73
+59 dd b5 82 0b fa 18 5b 4e 04 82 44 f7 5c e7 d5 7e 8d 87 3d
+c0 0c d3 cc bb 8a 78 e5 7b 8d 1a 5a ed 5d 8a fa ef 99 fa 71
+ae 6c 18 0e a6 ba d2 c8 a7 21 43 1e 61 d6 ae fc bc 83 d4 d8
+e6 99 19 6e d6 d0 61 40 e0 0f 35 91 20 63 2c b7 a4 1b aa 15
+d2 8d 05 25 3c fa ce a0 d8 40 69 55 6f c1 a9 8b 30 f0 d5 d5
+ac e3 ca 5a 9c 74 cd 57 d5 ed 19 db 4a b9 32 e9 cc 22 75 19
+86 fb c1 09 97 6a c9 d9 92 6e 86 dd 6a 92 53 d5
+
+----
+
+
+Getting number of PCRS: 
+numPcrs = 24
+Reading PCRs
+PCR 0: 0000000000000000000000000000000000000000
+PCR 1: 0000000000000000000000000000000000000000
+PCR 2: 0000000000000000000000000000000000000000
+PCR 3: 0000000000000000000000000000000000000000
+PCR 4: 0000000000000000000000000000000000000000
+PCR 5: 0000000000000000000000000000000000000000
+PCR 6: 0000000000000000000000000000000000000000
+PCR 7: 0000000000000000000000000000000000000000
+PCR 8: 0000000000000000000000000000000000000000
+PCR 9: 0000000000000000000000000000000000000000
+PCR 10: 0000000000000000000000000000000000000000
+PCR 11: 0000000000000000000000000000000000000000
+PCR 12: 0000000000000000000000000000000000000000
+PCR 13: 0000000000000000000000000000000000000000
+PCR 14: 0000000000000000000000000000000000000000
+PCR 15: 0000000000000000000000000000000000000000
+PCR 16: 0000000000000000000000000000000000000000
+PCR 17: ffffffffffffffffffffffffffffffffffffffff
+PCR 18: ffffffffffffffffffffffffffffffffffffffff
+PCR 19: ffffffffffffffffffffffffffffffffffffffff
+PCR 20: ffffffffffffffffffffffffffffffffffffffff
+PCR 21: ffffffffffffffffffffffffffffffffffffffff
+PCR 22: ffffffffffffffffffffffffffffffffffffffff
+PCR 23: 0000000000000000000000000000000000000000
+----
+
+Reading Key handles TPM 1.1 style
+TPM_KEY_HANDLES_LIST: 1 loaded handles
+0x5dde598
+
+----
+
+Reading KEY handles (TPM 1.2 style) ...
+(1 handles):
+0x5dde598
+
+----
+
+Reading CONTEXT handles (TPM 1.2 style) ...
+(0 handles):
+
+----
+
+Reading AUTH SESSION handles (TPM 1.2 style) ...
+(0 handles):
+
+----
+
+Reading TRANSPORT SESSION handles (TPM 1.2 style) ...
+(0 handles):
+
+----
+
+Reading monotonic counters (TPM 1.2 only) ...
+(0 counters):
+
+----
+</pre>
+
+<p>
+Note the key handle under KEY handles.  To evict or flush this key, use TPMFlush.
+</p>
+
+<pre>
+LFGSMACMINI:~/tpm/tpmjdemo lfgs$ sudo java edu.mit.csail.tpmj.tools.TPMFlush k 0x5dde598
+Flushing handle 0x5dde598...OK.
+</pre>
+
+Running TPMInfo again shows that the key handle is gone.
+<pre>
+LFGSMACMINI:~/tpm/tpmjdemo lfgs$ sudo java edu.mit.csail.tpmj.tools.TPMInfo tpmowner
+... (output text skipped) ...
+
+Reading Key handles TPM 1.1 style
+TPM_KEY_HANDLES_LIST: 0 loaded handles
+
+----
+
+Reading KEY handles (TPM 1.2 style) ...
+(0 handles):
+...
+</pre>
+
+<h4>PCR operations</h4>
+
+<h5>Listing the PCRs quickly</h5>
+<pre>
+LFGSMACMINI:~/tpm/tpmjdemo lfgs$ sudo java edu.mit.csail.tpmj.tools.TPMReadPCRs     
+PCR [0] 0000000000000000000000000000000000000000
+PCR [1] 0000000000000000000000000000000000000000
+PCR [2] 0000000000000000000000000000000000000000
+PCR [3] 0000000000000000000000000000000000000000
+PCR [4] 0000000000000000000000000000000000000000
+PCR [5] 0000000000000000000000000000000000000000
+PCR [6] 0000000000000000000000000000000000000000
+PCR [7] 0000000000000000000000000000000000000000
+PCR [8] 0000000000000000000000000000000000000000
+PCR [9] 0000000000000000000000000000000000000000
+PCR [10] 0000000000000000000000000000000000000000
+PCR [11] 0000000000000000000000000000000000000000
+PCR [12] 0000000000000000000000000000000000000000
+PCR [13] 0000000000000000000000000000000000000000
+PCR [14] 0000000000000000000000000000000000000000
+PCR [15] 0000000000000000000000000000000000000000
+PCR [16] 0000000000000000000000000000000000000000
+PCR [17] FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+PCR [18] FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+PCR [19] FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+PCR [20] FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+PCR [21] FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+PCR [22] FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+PCR [23] 0000000000000000000000000000000000000000
+LFGSMACMINI:~/tpm/tpmjdemo lfgs$ 
+</pre>
+
+<h5>Extending a PCR</h5>
+
+<p>
+<b>Warning!</b>
+These may interfere with other applications that depend on the PCR configurations.
+At present, the Intel Mac does not have such applications, but other OS's, particularly Vista
+may use the PCRs.  If a problem happens, reboot your machine.
+</p>
+
+<pre>
+LFGSMACMINI:~/tpm/tpmjdemo lfgs$ sudo java edu.mit.csail.tpmj.tools.TPMExtend 8 0x1234567890123456789012345678901234567890
+
+Parsing command-line arguments ...
+
+data = 0x1234567890123456789012345678901234567890, Encoded (Hex) = 1234567890123456789012345678901234567890
+PCR 8:
+Old value: 0000000000000000000000000000000000000000
+Extending by 1234567890123456789012345678901234567890...
+New value: d70c2b7c26f239e78542ad24bf4c3e64337a6bea
+
+
+LFGSMACMINI:~/tpm/tpmjdemo lfgs$ sudo java edu.mit.csail.tpmj.tools.TPMReadPCRs
+PCR [0] 0000000000000000000000000000000000000000
+PCR [1] 0000000000000000000000000000000000000000
+PCR [2] 0000000000000000000000000000000000000000
+PCR [3] 0000000000000000000000000000000000000000
+PCR [4] 0000000000000000000000000000000000000000
+PCR [5] 0000000000000000000000000000000000000000
+PCR [6] 0000000000000000000000000000000000000000
+PCR [7] 0000000000000000000000000000000000000000
+PCR [8] D70C2B7C26F239E78542AD24BF4C3E64337A6BEA
+PCR [9] 0000000000000000000000000000000000000000
+PCR [10] 0000000000000000000000000000000000000000
+PCR [11] 0000000000000000000000000000000000000000
+PCR [12] 0000000000000000000000000000000000000000
+PCR [13] 0000000000000000000000000000000000000000
+PCR [14] 0000000000000000000000000000000000000000
+PCR [15] 0000000000000000000000000000000000000000
+PCR [16] 0000000000000000000000000000000000000000
+PCR [17] FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+PCR [18] FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+PCR [19] FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+PCR [20] FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+PCR [21] FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+PCR [22] FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+PCR [23] 0000000000000000000000000000000000000000
+</pre>
+
+<h5>Quoting the PCRs and Verifying the Quote</h5>
+
+First, you have to load an AIK, and then use the handle that you get.
+<pre>
+LFGSMACMINI:~/tpm/tpmjdemo lfgs$ sudo java edu.mit.csail.tpmj.tools.TPMLoadKey aik.key SRK ""
+
+Parsing command-line arguments ...
+
+Using SRK as parent.
+parentPwd = , Encoded (All zeros) = 0000000000000000000000000000000000000000
+
+Read aik.key ...
+
+Loading the key into the TPM ...
+keyHandle = 0x533a590
+</pre>
+
+<pre>
+LFGSMACMINI:~/tpm/tpmjdemo lfgs$ sudo java edu.mit.csail.tpmj.tools.TPMQuote QuickStartQuoteDemo 0x533a590 test
+
+Parsing command-line arguments ...
+
+keyPwd = test, Encoded (Infineon/Vista (SHA1 of UTF16LE without null terminator) = 87f8ed9157125ffc4da9e06a7b8011ad80a53fe1
+nonce (external data) = QuickStartQuoteDemo, Encoded (Infineon/Vista (SHA1 of UTF16LE without null terminator) = 45b3a9c706bd08d3764a04c511c4d81028d11479
+
+*** Getting Quote *** ... 
+DONE.
+Output=TPM_QuoteOutput (data params only):
+PCRData = 
+TPM_PCR_COMPOSITE:
+select = TPM_PCR_SELECTION for 24 PCRs: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 (0xffffff)
+PcrValues (numValues=24, valueSize=480): 
+0000000000000000000000000000000000000000
+0000000000000000000000000000000000000000
+0000000000000000000000000000000000000000
+0000000000000000000000000000000000000000
+0000000000000000000000000000000000000000
+0000000000000000000000000000000000000000
+0000000000000000000000000000000000000000
+0000000000000000000000000000000000000000
+d70c2b7c26f239e78542ad24bf4c3e64337a6bea
+0000000000000000000000000000000000000000
+0000000000000000000000000000000000000000
+0000000000000000000000000000000000000000
+0000000000000000000000000000000000000000
+0000000000000000000000000000000000000000
+0000000000000000000000000000000000000000
+0000000000000000000000000000000000000000
+0000000000000000000000000000000000000000
+ffffffffffffffffffffffffffffffffffffffff
+ffffffffffffffffffffffffffffffffffffffff
+ffffffffffffffffffffffffffffffffffffffff
+ffffffffffffffffffffffffffffffffffffffff
+ffffffffffffffffffffffffffffffffffffffff
+ffffffffffffffffffffffffffffffffffffffff
+0000000000000000000000000000000000000000
+
+Signature (256 bytes): 319dfca0894c29dee910e97074225d14760a87a4a5e9a5e4de1567313af3ba2f9fe3f25cdb5bb8d104a447240276ce16892564f26a719724d78ef5d8fc597e843a7d980379acaa550f9a6b3e51624ce210922d49d3bb8e7efaab4887cbc7d15e29471e5e467fec4a5ee8b6f33a07dc5cd6425511464c071448402296f3257ef543980fb92db1467a99dc8c3748b8b46530c7dd9ed18c5ec3c9b92ee32933c5bede3b1299541bb724f3857151cfe6fa376a9e8ae6382c905e194d222b3f603f9f46a29bf53a473b336e4dabff3a366c6bebaa28fc12cb6e2c61e0a2bdfdbe88d1bc3d6534d20bee97f25c6d7166f4419e946372a1c1345aac46bcc1eba9346e5b
+
+Writing signature to file QuickStartQuoteDemo.quot
+DONE.
+
+Writing signature to file QuickStartQuoteDemo.sig
+DONE.
+
+LFGSMACMINI:~/tpm/tpmjdemo lfgs$ ls -l
+total 72
+-rw-r--r--   1 lfgs  lfgs   13 Apr  2 14:27 HelloWorld.txt
+-rw-r--r--   1 root  lfgs  256 Apr  2 14:42 HelloWorld.txt.enc
+-rw-r--r--   1 root  lfgs   13 Apr  2 14:42 HelloWorld.txt.enc.plain
+-rw-r--r--   1 root  lfgs  256 Apr  2 14:38 HelloWorld.txt.sig
+-rw-r--r--   1 root  lfgs  489 Apr  2 15:04 QuickStartQuoteDemo.quot
+-rw-r--r--   1 root  lfgs  256 Apr  2 15:04 QuickStartQuoteDemo.sig
+-rw-r--r--   1 root  lfgs  559 Mar 30 17:41 aik.key
+-rw-r--r--   1 root  lfgs  303 Mar 30 17:37 srk.pubkey
+-rw-r--r--   1 root  lfgs  559 Mar 30 17:56 testkey.key
+
+
+LFGSMACMINI:~/tpm/tpmjdemo lfgs$ sudo java edu.mit.csail.tpmj.tools.TPMVerifyQuote QuickStartQuoteDemo aik.key       
+
+Parsing command-line arguments ...
+
+nonce (external data) = QuickStartQuoteDemo, Encoded (Infineon/Vista (SHA1 of UTF16LE without null terminator) = 45b3a9c706bd08d3764a04c511c4d81028d11479
+
+*** Reading Quote Data from QuickStartQuoteDemo.quot *** ... 
+TPM_PCR_COMPOSITE:
+select = TPM_PCR_SELECTION for 24 PCRs: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 (0xffffff)
+PcrValues (numValues=24, valueSize=480): 
+0000000000000000000000000000000000000000
+0000000000000000000000000000000000000000
+0000000000000000000000000000000000000000
+0000000000000000000000000000000000000000
+0000000000000000000000000000000000000000
+0000000000000000000000000000000000000000
+0000000000000000000000000000000000000000
+0000000000000000000000000000000000000000
+d70c2b7c26f239e78542ad24bf4c3e64337a6bea
+0000000000000000000000000000000000000000
+0000000000000000000000000000000000000000
+0000000000000000000000000000000000000000
+0000000000000000000000000000000000000000
+0000000000000000000000000000000000000000
+0000000000000000000000000000000000000000
+0000000000000000000000000000000000000000
+0000000000000000000000000000000000000000
+ffffffffffffffffffffffffffffffffffffffff
+ffffffffffffffffffffffffffffffffffffffff
+ffffffffffffffffffffffffffffffffffffffff
+ffffffffffffffffffffffffffffffffffffffff
+ffffffffffffffffffffffffffffffffffffffff
+ffffffffffffffffffffffffffffffffffffffff
+0000000000000000000000000000000000000000
+
+
+*** Reading Signature from QuickStartQuoteDemo.sig *** ... 
+
+31 9d fc a0 89 4c 29 de e9 10 e9 70 74 22 5d 14 76 0a 87 a4
+a5 e9 a5 e4 de 15 67 31 3a f3 ba 2f 9f e3 f2 5c db 5b b8 d1
+04 a4 47 24 02 76 ce 16 89 25 64 f2 6a 71 97 24 d7 8e f5 d8
+fc 59 7e 84 3a 7d 98 03 79 ac aa 55 0f 9a 6b 3e 51 62 4c e2
+10 92 2d 49 d3 bb 8e 7e fa ab 48 87 cb c7 d1 5e 29 47 1e 5e
+46 7f ec 4a 5e e8 b6 f3 3a 07 dc 5c d6 42 55 11 46 4c 07 14
+48 40 22 96 f3 25 7e f5 43 98 0f b9 2d b1 46 7a 99 dc 8c 37
+48 b8 b4 65 30 c7 dd 9e d1 8c 5e c3 c9 b9 2e e3 29 33 c5 be
+de 3b 12 99 54 1b b7 24 f3 85 71 51 cf e6 fa 37 6a 9e 8a e6
+38 2c 90 5e 19 4d 22 2b 3f 60 3f 9f 46 a2 9b f5 3a 47 3b 33
+6e 4d ab ff 3a 36 6c 6b eb aa 28 fc 12 cb 6e 2c 61 e0 a2 bd
+fd be 88 d1 bc 3d 65 34 d2 0b ee 97 f2 5c 6d 71 66 f4 41 9e
+94 63 72 a1 c1 34 5a ac 46 bc c1 eb a9 34 6e 5b
+
+
+*** Getting the public key from aik.key ... 
+Public key bytes (256 bytes) =
+
+8f 0a 65 2e c1 64 96 87 10 35 f2 56 65 82 cc eb 82 6f 81 b6
+4c 86 a2 92 9d 99 8e a9 a2 2e a6 35 47 62 e2 f7 1a 4e 9b a2
+f0 e6 3c 5d 83 57 84 02 1b 3f bb 2b 3c 00 92 51 36 4c f8 9c
+45 88 cd 81 fc 18 b5 25 e7 45 7c 91 44 04 29 85 16 3a f0 cd
+4c 85 3b 76 78 03 8f 12 c1 a9 34 dc d4 2b f4 ac f1 99 d0 39
+19 d3 fc 20 e7 88 41 cb c1 e1 e8 1e d9 1f fc 5c bf 68 d2 17
+a4 1e 14 7f 02 a5 5e 53 7f 59 d7 f3 cc a8 6d 50 f5 fa ad ed
+e1 3f cf 92 7a 60 c7 e5 65 01 56 61 ee 1c 34 9b 7f f6 e0 12
+f9 8f f5 d1 85 70 74 db a3 0b 27 37 c7 f9 1c 77 f0 4b b9 a1
+2d 30 0b 96 fe ff 4b 68 8b 44 90 97 fc 2d a3 74 66 19 72 f3
+fc b9 b9 83 0b 6b 99 4d 12 a3 33 53 86 cb a2 ac 49 7f 3c 06
+8c 56 1d 86 d6 71 1a 63 13 13 c9 cd 6c 1f 55 7a ed 38 3c 94
+9c d4 07 15 25 35 d3 d4 4c e6 c2 04 29 3e 06 8d
+
+
+*** Verifying signature on quote by software using public key ... 
+Signature OK? true
+</pre>
+
+<h4>Sealing and Unsealing data</h4>
+
+<h5>Sealing and unsealing Data without dependence on PCRs</h5>
+
+<p>
+Sealing data without dependence on PCRs (no PCRs given after
+the dataPwd on the command line) 
+allows you to encrypt
+data that can be decrypted (unsealed) only on the same TPM,
+and with knowledge of both the storage key password,
+and the data password.
+</p>
+<pre>
+LFGSMACMINI:~/tpm/tpmjdemo lfgs$ ls -l
+total 72
+-rw-r--r--   1 lfgs  lfgs   13 Apr  2 14:27 HelloWorld.txt
+-rw-r--r--   1 root  lfgs  256 Apr  2 14:42 HelloWorld.txt.enc
+-rw-r--r--   1 root  lfgs   13 Apr  2 14:42 HelloWorld.txt.enc.plain
+-rw-r--r--   1 root  lfgs  256 Apr  2 14:38 HelloWorld.txt.sig
+-rw-r--r--   1 root  lfgs  489 Apr  2 15:04 QuickStartQuoteDemo.quot
+-rw-r--r--   1 root  lfgs  256 Apr  2 15:04 QuickStartQuoteDemo.sig
+-rw-r--r--   1 root  lfgs  559 Mar 30 17:41 aik.key
+-rw-r--r--   1 root  lfgs  303 Mar 30 17:37 srk.pubkey
+-rw-r--r--   1 root  lfgs  559 Mar 30 17:56 testkey.key
+LFGSMACMINI:~/tpm/tpmjdemo lfgs$ sudo java edu.mit.csail.tpmj.tools.TPMSeal HelloWorld.txt SRK "" foo    
+
+Parsing command-line arguments ...
+
+Using SRK to seal.
+keyPwd = , Encoded (All zeros) = 0000000000000000000000000000000000000000
+dataPwd = foo, Encoded (Infineon/Vista (SHA1 of UTF16LE without null terminator) = b91c0b9b01341768775b9133b367c86c196061c8
+
+*** Reading Data *** ... 
+48 65 6c 6c 6f 20 57 6f 72 6c 64 21 0a
+
+*** Reading PCR configuation to seal data to *** ... 
+PCRs will NOT be used as a condition for unsealing
+
+*** Sealing Data *** ... 
+Encrypted data structure =
+TPM_STORED_DATA: ver: edu.mit.csail.tpmj.structs.TPM_STRUCT_VER: 01 01 00 00
+sealInfo: null
+encData (256 bytes): 
+72 44 91 0b ea e2 b8 25 5f 06 96 e4 b2 16 a5 93 aa c2 2d 7b
+31 ac 93 bb b8 37 4f 43 04 0f c5 02 36 2a a7 60 0a 10 bf c0
+64 27 ae 8b e5 e4 e8 3f 58 e6 d9 17 d8 5f ce 80 17 03 e5 54
+44 88 05 76 8b 6a 84 28 94 d3 22 13 25 e0 96 11 59 b3 ac c2
+c6 31 be 83 f0 51 dd 73 97 96 b4 bd ab c2 35 3a 69 52 19 a0
+4b 66 88 d5 52 8a 6f 26 c8 5d a2 bf 61 51 ab 3c 8a a1 11 0d
+38 18 5c f8 ba 61 61 a1 fa 7f 39 9c 74 98 6a 0b 84 d1 82 52
+b1 10 09 e5 61 84 fe 8c 45 2a 92 aa 8b b3 b9 ee 48 22 6a df
+57 22 15 65 3d 18 ab e1 44 99 3f 15 36 7e 7e 82 9c c1 8b ad
+ff 5e 31 84 cb e5 3f b9 0e 37 92 95 79 88 f8 12 dd 58 b4 39
+2e 04 10 45 e8 e1 0e 65 13 21 db f5 e6 46 f9 85 0c 2d c7 d5
+d2 a8 28 a0 db 06 55 d4 41 5f a2 18 17 4a 0e 1b a6 25 64 18
+97 f6 d6 59 03 11 4d 94 0b 69 29 bc 7b 7f 8b e7
+
+Writing to file HelloWorld.txt.sealed
+DONE.
+
+*** Testing Unseal *** ...
+48 65 6c 6c 6f 20 57 6f 72 6c 64 21 0a
+LFGSMACMINI:~/tpm/tpmjdemo lfgs$ ls -l 
+total 80
+-rw-r--r--   1 lfgs  lfgs   13 Apr  2 14:27 HelloWorld.txt
+-rw-r--r--   1 root  lfgs  256 Apr  2 14:42 HelloWorld.txt.enc
+-rw-r--r--   1 root  lfgs   13 Apr  2 14:42 HelloWorld.txt.enc.plain
+-rw-r--r--   1 root  lfgs  268 Apr  2 15:19 HelloWorld.txt.sealed
+-rw-r--r--   1 root  lfgs  256 Apr  2 14:38 HelloWorld.txt.sig
+-rw-r--r--   1 root  lfgs  489 Apr  2 15:04 QuickStartQuoteDemo.quot
+-rw-r--r--   1 root  lfgs  256 Apr  2 15:04 QuickStartQuoteDemo.sig
+-rw-r--r--   1 root  lfgs  559 Mar 30 17:41 aik.key
+-rw-r--r--   1 root  lfgs  303 Mar 30 17:37 srk.pubkey
+-rw-r--r--   1 root  lfgs  559 Mar 30 17:56 testkey.key
+LFGSMACMINI:~/tpm/tpmjdemo lfgs$ sudo java edu.mit.csail.tpmj.tools.TPMUnseal HelloWorld.txt.sealed SRK "" foo
+
+Parsing command-line arguments ...
+
+Using SRK to seal.
+keyPwd = , Encoded (All zeros) = 0000000000000000000000000000000000000000
+dataPwd = foo, Encoded (Infineon/Vista (SHA1 of UTF16LE without null terminator) = b91c0b9b01341768775b9133b367c86c196061c8
+
+*** Reading SealedData from file HelloWorld.txt.sealed *** ... 
+Encrypted data structure =
+TPM_STORED_DATA: ver: edu.mit.csail.tpmj.structs.TPM_STRUCT_VER: 01 01 00 00
+sealInfo: null
+encData (256 bytes): 
+72 44 91 0b ea e2 b8 25 5f 06 96 e4 b2 16 a5 93 aa c2 2d 7b
+31 ac 93 bb b8 37 4f 43 04 0f c5 02 36 2a a7 60 0a 10 bf c0
+64 27 ae 8b e5 e4 e8 3f 58 e6 d9 17 d8 5f ce 80 17 03 e5 54
+44 88 05 76 8b 6a 84 28 94 d3 22 13 25 e0 96 11 59 b3 ac c2
+c6 31 be 83 f0 51 dd 73 97 96 b4 bd ab c2 35 3a 69 52 19 a0
+4b 66 88 d5 52 8a 6f 26 c8 5d a2 bf 61 51 ab 3c 8a a1 11 0d
+38 18 5c f8 ba 61 61 a1 fa 7f 39 9c 74 98 6a 0b 84 d1 82 52
+b1 10 09 e5 61 84 fe 8c 45 2a 92 aa 8b b3 b9 ee 48 22 6a df
+57 22 15 65 3d 18 ab e1 44 99 3f 15 36 7e 7e 82 9c c1 8b ad
+ff 5e 31 84 cb e5 3f b9 0e 37 92 95 79 88 f8 12 dd 58 b4 39
+2e 04 10 45 e8 e1 0e 65 13 21 db f5 e6 46 f9 85 0c 2d c7 d5
+d2 a8 28 a0 db 06 55 d4 41 5f a2 18 17 4a 0e 1b a6 25 64 18
+97 f6 d6 59 03 11 4d 94 0b 69 29 bc 7b 7f 8b e7
+
+
+*** Unsealing *** ...
+48 65 6c 6c 6f 20 57 6f 72 6c 64 21 0a
+
+*** Writing to file HelloWorld.txt.unsealed *** ...
+DONE.
+LFGSMACMINI:~/tpm/tpmjdemo lfgs$ ls -l
+total 88
+-rw-r--r--   1 lfgs  lfgs   13 Apr  2 14:27 HelloWorld.txt
+-rw-r--r--   1 root  lfgs  256 Apr  2 14:42 HelloWorld.txt.enc
+-rw-r--r--   1 root  lfgs   13 Apr  2 14:42 HelloWorld.txt.enc.plain
+-rw-r--r--   1 root  lfgs  268 Apr  2 15:19 HelloWorld.txt.sealed
+-rw-r--r--   1 root  lfgs  256 Apr  2 14:38 HelloWorld.txt.sig
+-rw-r--r--   1 root  lfgs   13 Apr  2 15:20 HelloWorld.txt.unsealed
+-rw-r--r--   1 root  lfgs  489 Apr  2 15:04 QuickStartQuoteDemo.quot
+-rw-r--r--   1 root  lfgs  256 Apr  2 15:04 QuickStartQuoteDemo.sig
+-rw-r--r--   1 root  lfgs  559 Mar 30 17:41 aik.key
+-rw-r--r--   1 root  lfgs  303 Mar 30 17:37 srk.pubkey
+-rw-r--r--   1 root  lfgs  559 Mar 30 17:56 testkey.key
+LFGSMACMINI:~/tpm/tpmjdemo lfgs$ cat HelloWorld.txt.unsealed
+Hello World!
+LFGSMACMINI:~/tpm/tpmjdemo lfgs$ 
+</pre>
+
+<h5>Sealing and Unsealing data to current PCR configuration</h5>
+
+<b>NOTE:</b>Currently, sealing to a PCR selection doesn't seem to work
+on the Mac (with Infineon TPM 1.2 chip) 
+for some unknown reason.  It works under Linux on an HP DC7600
+with Broadcom TPM 1.2 chip, and on a Fujitsu Lifebook with an Infineon TPM 1.1 chip, though.
+
+<pre>
+LFGSMACMINI:~/tpm/tpmjdemo lfgs$ sudo java edu.mit.csail.tpmj.tools.TPMSeal HelloWorld.txt SRK "" foo 7 8 
+
+Parsing command-line arguments ...
+
+Using SRK to seal.
+keyPwd = , Encoded (All zeros) = 0000000000000000000000000000000000000000
+dataPwd = foo, Encoded (Infineon/Vista (SHA1 of UTF16LE without null terminator) = b91c0b9b01341768775b9133b367c86c196061c8
+
+*** Reading Data *** ... 
+48 65 6c 6c 6f 20 57 6f 72 6c 64 21 0a
+
+*** Reading PCR configuation to seal data to *** ... 
+PCRs: 7 8 
+TPM_PCR_COMPOSITE:
+select = TPM_PCR_SELECTION for 24 PCRs: 7 8 (0x800100)
+PcrValues (numValues=2, valueSize=40): 
+0000000000000000000000000000000000000000
+d70c2b7c26f239e78542ad24bf4c3e64337a6bea
+
+digest: 22511bf7c5fb74e07777520c166666c1c12d473d
+
+*** Sealing Data *** ... 
+TPM Exception: edu.mit.csail.tpmj.TPMErrorReturnCodeException
+Occured on input: edu.mit.csail.tpmj.commands.TPM_Seal: 
+00 c2 00 00 00 91 00 00 00 17 40 00 00 00 39 bf a7 91 b0 af
+a1 61 35 67 d4 5a 69 b4 1d d7 08 49 12 69 00 00 00 2d 00 03
+80 01 00 22 51 1b f7 c5 fb 74 e0 77 77 52 0c 16 66 66 c1 c1
+2d 47 3d 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 0d 48 65 6c 6c 6f 20 57 6f 72 6c 64 21 0a
+01 fc 8f 92 0e d5 29 d6 a9 a7 84 e9 0e 4d 02 a1 eb 04 97 c1
+22 1d 17 d2 00 fb d1 71 aa fd 4c b7 ac 30 3e 2e c4 46 a6 2c
+f6 bd 55 97 a0
+
+Output (if any): edu.mit.csail.tpmj.structs.ByteArrayTPMOutputStruct: 00 c4 00 00 00 0a 00 00 00 03
+Return Code (if any): 3 (TPM_BAD_PARAMETER)
+</pre>
+
+<h4>Monotonic counter operations</h4>
+
+<h5>Creation</h5>
+<pre>
+LFGSMACMINI:~/tpm/tpmjdemo lfgs$ sudo java edu.mit.csail.tpmj.tools.TPMCreateCounter tpmowner CNTR foocount
+
+Parsing command-line arguments ...
+
+ownerPwd = tpmowner, Encoded (Infineon/Vista (SHA1 of UTF16LE without null terminator) = 4ddb6f65c4d692cab6e3df8b7546228855578946
+counterPwd = foocount, Encoded (Infineon/Vista (SHA1 of UTF16LE without null terminator) = 33353475e77df61d66a602d6dc57e90e1bbfa720
+Creating monotonic counter for label CNTR(0x434e5452) ...
+Created Counter ID 0xab6f671
+TPM_COUNTER_VALUE: label: 0x434e5452 (CNTR), counter value: 0x27
+</pre>
+
+<h5>Reading</h5>
+<pre>
+LFGSMACMINI:~/tpm/tpmjdemo lfgs$ sudo java edu.mit.csail.tpmj.tools.TPMReadCounter 0xab6f671               
+
+Parsing command-line arguments ...
+
+counterPwd = null, Encoded (NULL [no authorization]) = null
+Using NULL (all zeroes) as counterAuth
+Reading counter 0xab6f671
+Output: TPM_COUNTER_VALUE: label: 0x434e5452 (CNTR), counter value: 0x27
+</pre>
+
+<h5>Incrementing</h5>
+<pre>
+LFGSMACMINI:~/tpm/tpmjdemo lfgs$ sudo java edu.mit.csail.tpmj.tools.TPMIncCounter 0xab6f671 foocount
+
+Parsing command-line arguments ...
+
+counterPwd = foocount, Encoded (Infineon/Vista (SHA1 of UTF16LE without null terminator) = 33353475e77df61d66a602d6dc57e90e1bbfa720
+Incrementing counter 0xab6f671
+Output: TPM_COUNTER_VALUE: label: 0x434e5452 (CNTR), counter value: 0x28
+
+NOTE: You will not be able to increment
+any other counters aside from 0xab6f671
+until you reboot.
+</pre>
+
+<h5>Count-stamp a file (uses monotonic counter and transport sessions)</h5>
+
+<pre>
+LFGSMACMINI:~/tpm/tpmjdemo lfgs$ sudo java edu.mit.csail.tpmj.tools.TPMCreateCountStamp HelloWorld.txt I 0xab6f671 foocount 0x533a590 test
+
+Parsing command-line arguments ...
+
+counterPwd = foocount, Encoded (Infineon/Vista (SHA1 of UTF16LE without null terminator) = 33353475e77df61d66a602d6dc57e90e1bbfa720
+keyPwd = test, Encoded (Infineon/Vista (SHA1 of UTF16LE without null terminator) = 87f8ed9157125ffc4da9e06a7b8011ad80a53fe1
+
+*** Reading Data *** ... 
+Hash of data (to be used as nonce): a0b65939670bc2c010f4d5d6a0b3e4e4590fb92b
+Writing CountStamp to file HelloWorld.txt.cntstmp
+DONE.
+
+
+Reading CountStamp to verify it ... 
+CountStamp: TPMCountStamp:
+ID = [0xab6f671, CNTR]
+count = 41
+opType = 0x221 (TPM_ORD_IncrementCounter)
+error code = 0x0
+nonce = a0b65939670bc2c010f4d5d6a0b3e4e4590fb92b
+
+*** Verifying signature by software using public key ... 
+Signature OK? true
+
+
+LFGSMACMINI:~/tpm/tpmjdemo lfgs$ ls -l
+total 96
+-rw-r--r--   1 lfgs  lfgs    13 Apr  2 14:27 HelloWorld.txt
+-rw-r--r--   1 root  lfgs  2390 Apr  2 17:47 HelloWorld.txt.cntstmp
+-rw-r--r--   1 root  lfgs   256 Apr  2 14:42 HelloWorld.txt.enc
+-rw-r--r--   1 root  lfgs    13 Apr  2 14:42 HelloWorld.txt.enc.plain
+-rw-r--r--   1 root  lfgs   268 Apr  2 16:50 HelloWorld.txt.sealed
+-rw-r--r--   1 root  lfgs   256 Apr  2 14:38 HelloWorld.txt.sig
+-rw-r--r--   1 root  lfgs    13 Apr  2 15:24 HelloWorld.txt.unsealed
+-rw-r--r--   1 root  lfgs   489 Apr  2 15:04 QuickStartQuoteDemo.quot
+-rw-r--r--   1 root  lfgs   256 Apr  2 15:04 QuickStartQuoteDemo.sig
+-rw-r--r--   1 root  lfgs   559 Mar 30 17:41 aik.key
+-rw-r--r--   1 root  lfgs   303 Mar 30 17:37 srk.pubkey
+-rw-r--r--   1 root  lfgs   559 Mar 30 17:56 testkey.key
+</pre>
+
+<h5>Verify the count-stamp</h5>
+<pre>
+LFGSMACMINI:~/tpm/tpmjdemo lfgs$ sudo java edu.mit.csail.tpmj.tools.TPMVerifyCountStamp HelloWorld.txt aik.key                            
+
+Parsing command-line arguments ...
+
+
+*** Reading Data *** ... 
+
+*** Getting the public key from aik.key ... 
+Public key = TPM_STORE_PUBKEY (256 bytes): 
+8f 0a 65 2e c1 64 96 87 10 35 f2 56 65 82 cc eb 82 6f 81 b6
+4c 86 a2 92 9d 99 8e a9 a2 2e a6 35 47 62 e2 f7 1a 4e 9b a2
+f0 e6 3c 5d 83 57 84 02 1b 3f bb 2b 3c 00 92 51 36 4c f8 9c
+45 88 cd 81 fc 18 b5 25 e7 45 7c 91 44 04 29 85 16 3a f0 cd
+4c 85 3b 76 78 03 8f 12 c1 a9 34 dc d4 2b f4 ac f1 99 d0 39
+19 d3 fc 20 e7 88 41 cb c1 e1 e8 1e d9 1f fc 5c bf 68 d2 17
+a4 1e 14 7f 02 a5 5e 53 7f 59 d7 f3 cc a8 6d 50 f5 fa ad ed
+e1 3f cf 92 7a 60 c7 e5 65 01 56 61 ee 1c 34 9b 7f f6 e0 12
+f9 8f f5 d1 85 70 74 db a3 0b 27 37 c7 f9 1c 77 f0 4b b9 a1
+2d 30 0b 96 fe ff 4b 68 8b 44 90 97 fc 2d a3 74 66 19 72 f3
+fc b9 b9 83 0b 6b 99 4d 12 a3 33 53 86 cb a2 ac 49 7f 3c 06
+8c 56 1d 86 d6 71 1a 63 13 13 c9 cd 6c 1f 55 7a ed 38 3c 94
+9c d4 07 15 25 35 d3 d4 4c e6 c2 04 29 3e 06 8d
+
+Reading CountStamp from file HelloWorld.txt.cntstmp ... 
+CountStamp: TPMCountStamp:
+ID = [0xab6f671, CNTR]
+count = 41
+opType = 0x221 (TPM_ORD_IncrementCounter)
+error code = 0x0
+nonce = a0b65939670bc2c010f4d5d6a0b3e4e4590fb92b
+
+*** Verifying signature by software using public key ... 
+Signature OK? true
+</pre>
+
+
+<h3><a name="linuxexample">Linux (HP dc7600 with Broadcom TPM 1.2)</a></h3>
+
+<p>
+The following tests were done on an HP DC7600.
+</p>
+
+<p>
+First, make sure the TPM device is available.
+</p>
+<pre>
+lfgs@tpm0:~$ ls -l /dev/tpm*
+crw-rw---- 1 root tpm 10, 224 2007-04-02 12:01 /dev/tpm0
+</pre>
+
+<h4>Setting the path</h4>
+
+<p>
+The following example assumes you the TPM/J files are in <code>~/tpm/tpmj/</code>,
+and you have created and cd'd into the folder <code>~/tpm/tpmjdemo/</code>.
+</p>
+
+<pre>
+lfgs@tpm0:~/tpm/tpmjdemo$ export CLASSPATH=~/tpm/tpmj/lib/tpmj.jar:~/tpm/tpmj/lib/bcprov-jdk15-131.jar
+</pre>
+
+<h4>Clearing the TPM (with owner authorization)</h4>
+
+<p>
+This is an optional step, in case you want to or need to clear the TPM.
+</p>
+<p>
+<strong>Warning!</strong>
+This will cause you to lose access to ALL data or keys protected by the TPM
+(except for the EK).
+</p>
+
+<pre>
+lfgs@tpm0:~/tpm/tpmjdemo$ java edu.mit.csail.tpmj.tools.special.TPMOwnerClear -ptpmowner
+ownerAuth = -ptpmowner, Encoded (SHA1 Plain ASCII without null terminator) = 21d0547d7cb6192f454e00cd897078deb0f0dea2
+Executing TPM_OwnerClear() ...
+Done in 627 ms.
+You should REBOOT your machine.
+</pre>
+
+<p>
+After rebooting, load the driver and set the classpath again.
+Then, you can check the status of the TPM using TPMInfo.
+</p>
+<pre>
+lfgs@tpm0:~/tpm/tpmjdemo$ java edu.mit.csail.tpmj.tools.TPMInfo
+ownerPwd = null, Encoded (NULL [no authorization]) = null
+
+*****
+Getting manufacturer ID ...
+TPM VENDOR ID = 0x4252434d (BRCM)
+----
+
+Getting version via TPM 1.1 way ...
+Returned: edu.mit.csail.tpmj.structs.TPM_STRUCT_VER: 01 01 00 00
+
+----
+
+Getting version via TPM 1.2 way ...
+Returned: edu.mit.csail.tpmj.structs.TPM_CAP_VERSION_INFO: 00 30 01 02 02 12 00 00 00 42 52 43 4d 00 00
+tag: 0x30
+version: edu.mit.csail.tpmj.structs.TPM_VERSION: 01 02 02 12
+specLevel: 0x0
+errataRev: 0x0
+tpmVendorID: 0x4252434d
+vendorSpecificSize: 0x0
+vendorSpecific:
+
+----
+
+Getting TPM Flags (TPM 1.2 only) ...
+Getting TPM Permanent Flags ...
+Returned: TPM_PERMANENT_FLAGS:
+disable: true
+ownership: true
+deactivated: true
+readPubek: true
+disableOwnerClear: false
+allowMaintenance: false
+physicalPresenceLifetimeLock: true
+physicalPresenceHWEnable: false
+physicalPresenceCMDEnable: true
+CEKPUsed: false
+TPMpost: false
+TPMpostLock: false
+FIPS: false
+operator: false
+enableRevokeEK: false
+nvLocked: false
+readSRKPub: true
+tpmEstablished: true
+
+Getting TPM Volatile Flags ...
+Returned: TPM_STCLEAR_FLAGS:
+deactivated: true
+disableForceClear: false
+physicalPresence: false
+physicalPresenceLock: true
+bGlobalLock: false
+
+----
+
+Reading Public Endorsement Key using TPM_OwnerReadInternalPub (TPM 1.2 only) ...
+Error: java.lang.IllegalArgumentException: TPMAdminFuncs.TPM_OwnerReadInternalPub: ownerAuth can't be null.
+
+Reading Public Endorsement Key using TPM_ReadPubek ...
+(using all-zeros as nonce)
+TPM Exception: edu.mit.csail.tpmj.TPMErrorReturnCodeException
+Occured on input: edu.mit.csail.tpmj.commands.TPM_ReadPubek:
+00 c1 00 00 00 1e 00 00 00 7c 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00
+
+Output (if any): edu.mit.csail.tpmj.structs.ByteArrayTPMOutputStruct: 00 c4 00 00 00 0a 00 00 00 06
+Return Code (if any): 6 (TPM_DEACTIVATED)
+----
+
+
+Getting number of PCRS:
+numPcrs = 24
+Reading PCRs
+TPM Exception: edu.mit.csail.tpmj.TPMErrorReturnCodeException
+Occured on input: edu.mit.csail.tpmj.commands.TPM_PCRRead: 00 c1 00 00 00 0e 00 00 00 15 00 00 00 00
+Output (if any): edu.mit.csail.tpmj.structs.ByteArrayTPMOutputStruct: 00 c4 00 00 00 0a 00 00 00 06
+Return Code (if any): 6 (TPM_DEACTIVATED)
+----
+
+Reading Key handles TPM 1.1 style
+TPM_KEY_HANDLES_LIST: 0 loaded handles
+
+----
+
+Reading KEY handles (TPM 1.2 style) ...
+(0 handles):
+
+----
+
+Reading CONTEXT handles (TPM 1.2 style) ...
+(0 handles):
+
+----
+
+Reading AUTH SESSION handles (TPM 1.2 style) ...
+(0 handles):
+
+----
+
+Reading TRANSPORT SESSION handles (TPM 1.2 style) ...
+(0 handles):
+
+----
+
+Reading monotonic counters (TPM 1.2 only) ...
+(0 counters):
+
+----
+
+</pre>
+
+<p>
+Note the following status bits indicating the TPM is disabled and deactivated.
+(But note that ownership = true does NOT mean there is an owner.)
+</p>
+<pre>
+disable: true
+ownership: true
+deactivated: true
+</pre>
+
+<h4>Activating the TPM</h4>
+
+On our HP DC7600, activating the TPM via software does <b>NOT</b> work
+(unlike on an Intel Mac).  You have to manually do it through the BIOS.
+The following is the output (after the reboot after clearing it).
+<pre>
+lfgs@tpm0:~/tpm/tpmjdemo$ java edu.mit.csail.tpmj.tools.special.TPMActivate
+Running TPMPhysicalEnable ...
+Executing TPM_SelfTestFull() ...
+Done in 965 ms.
+Executing TPM_GetTestResult() ...
+Done in 14 ms.
+Results: 00 7f ff 80
+Asserting Physical Presence ...
+TPM Exception: edu.mit.csail.tpmj.TPMErrorReturnCodeException
+Occured on input: edu.mit.csail.tpmj.commands.TSC_PhysicalPresence: 00 c1 00 00 00 0c 40 00 00 0a 00 08
+Output (if any): edu.mit.csail.tpmj.structs.ByteArrayTPMOutputStruct: 00 c4 00 00 00 0a 00 00 00 03
+Return Code (if any): 3 (TPM_BAD_PARAMETER)
+calling TPM_PhysicalSetDeactivated(false) ...
+TPM Exception: edu.mit.csail.tpmj.TPMErrorReturnCodeException
+Occured on input: edu.mit.csail.tpmj.commands.TPM_PhysicalSetDeactivated: 00 c1 00 00 00 0b 00 00 00 72 00
+Output (if any): edu.mit.csail.tpmj.structs.ByteArrayTPMOutputStruct: 00 c4 00 00 00 0a 00 00 00 07
+Return Code (if any): 7 (TPM_DISABLED)
+</pre>
+
+<p>
+The reason this doesn't work even though the
+<tt>physicalPresenceCMDEnable</tt> is true (just as in the Mac),
+seems to be the <tt>physicalPresenceLock</tt> volatile flag, 
+which seems to be different between the IFX chip on the Mac and BRCM on the HP DC7600
+(see TPMInfo output above).
+Note that this volatile flag is set by TPM_Startup/ST_CLEAR.
+</p>
+
+<p>
+So, the thing to do is reset and enable the TPM using the BIOS.
+The following shows the status of the TPM after doing so:
+</p>
+<pre>
+lfgs@tpm0:~/tpm/tpmjdemo$ java edu.mit.csail.tpmj.tools.TPMInfo
+ownerPwd = null, Encoded (NULL [no authorization]) = null
+
+*****
+Getting manufacturer ID ...
+TPM VENDOR ID = 0x4252434d (BRCM)
+----
+
+Getting version via TPM 1.1 way ...
+Returned: edu.mit.csail.tpmj.structs.TPM_STRUCT_VER: 01 01 00 00
+
+----
+
+Getting version via TPM 1.2 way ...
+Returned: edu.mit.csail.tpmj.structs.TPM_CAP_VERSION_INFO: 00 30 01 02 02 12 00 00 00 42 52 43 4d 00 00
+tag: 0x30
+version: edu.mit.csail.tpmj.structs.TPM_VERSION: 01 02 02 12
+specLevel: 0x0
+errataRev: 0x0
+tpmVendorID: 0x4252434d
+vendorSpecificSize: 0x0
+vendorSpecific:
+
+----
+
+Getting TPM Flags (TPM 1.2 only) ...
+Getting TPM Permanent Flags ...
+Returned: TPM_PERMANENT_FLAGS:
+disable: false
+ownership: true
+deactivated: false
+readPubek: true
+disableOwnerClear: false
+allowMaintenance: false
+physicalPresenceLifetimeLock: true
+physicalPresenceHWEnable: false
+physicalPresenceCMDEnable: true
+CEKPUsed: false
+TPMpost: false
+TPMpostLock: false
+FIPS: false
+operator: false
+enableRevokeEK: false
+nvLocked: false
+readSRKPub: true
+tpmEstablished: true
+
+Getting TPM Volatile Flags ...
+Returned: TPM_STCLEAR_FLAGS:
+deactivated: false
+disableForceClear: false
+physicalPresence: false
+physicalPresenceLock: true
+bGlobalLock: false
+
+----
+
+Reading Public Endorsement Key using TPM_OwnerReadInternalPub (TPM 1.2 only) ...
+Error: java.lang.IllegalArgumentException: TPMAdminFuncs.TPM_OwnerReadInternalPub: ownerAuth can't be null.
+
+Reading Public Endorsement Key using TPM_ReadPubek ...
+(using all-zeros as nonce)
+Public Endorsement Key:
+TPM_PUBKEY:
+algorithmParms = TPM_KEY_PARMS: algorithmID= 0x1, encScheme= 0x3, sigScheme= 0x1
+Parm (12 bytes):
+TPM_RSA_KEY_PARMS: keyLength=2048, numPrimes=2, exponent (0 bytes):
+pubKey: TPM_STORE_PUBKEY (256 bytes):
+e2 12 e1 00 f2 26 ff e7 bd 0e cd 38 2b 84 84 bd d6 2d 10 f7
+3c 19 ce 98 76 2b 71 de 1e cb 27 09 84 31 2c d3 1d a3 6e 3d
+42 0f 93 7f c0 4b ae 6a 1f f2 fd b6 58 43 3e 93 ac 96 3c b0
+4e 1e 7f 56 31 80 c1 95 36 22 3a bb 0b a7 68 6f c3 3a 54 a8
+01 83 1f 6a 54 99 2f 37 21 50 02 0d 5a 81 e9 7d 0c c7 f6 86
+84 26 b9 fe 81 9b 16 80 c8 b2 2f 62 e8 9d 2c dd ee f5 b1 56
+d3 22 2a 96 a3 11 30 1f 42 75 40 5c 4e 49 5b dd 3a 12 d1 ca
+ec 29 c9 8e 3e 96 a0 4c 95 6f b0 f1 db d7 e1 15 a4 92 68 64
+41 04 00 b6 72 bd f7 d0 97 61 e5 a4 c9 90 42 80 b1 34 d4 23
+02 af cc 4a 4d 98 4b c0 bc 1d 38 e3 72 5f e3 6b 35 b7 84 97
+8f c1 d6 0d 0f a4 8b 39 5d 3b 1d 07 1d 38 68 ad 24 91 a5 b1
+6d b9 1b 68 65 0f 8c ec 66 72 0b cb 35 5b 98 4c e7 cd 22 7f
+2e ca 98 88 4a 44 8c fb 15 7c 48 6a 7d 32 9a d1
+
+----
+
+
+Getting number of PCRS:
+numPcrs = 24
+Reading PCRs
+PCR 0: 0000000000000000000000000000000000000000
+PCR 1: 0000000000000000000000000000000000000000
+PCR 2: 0000000000000000000000000000000000000000
+PCR 3: 0000000000000000000000000000000000000000
+PCR 4: 0000000000000000000000000000000000000000
+PCR 5: 0000000000000000000000000000000000000000
+PCR 6: 0000000000000000000000000000000000000000
+PCR 7: 0000000000000000000000000000000000000000
+PCR 8: 0000000000000000000000000000000000000000
+PCR 9: 0000000000000000000000000000000000000000
+PCR 10: 0000000000000000000000000000000000000000
+PCR 11: 0000000000000000000000000000000000000000
+PCR 12: 0000000000000000000000000000000000000000
+PCR 13: 0000000000000000000000000000000000000000
+PCR 14: 0000000000000000000000000000000000000000
+PCR 15: 0000000000000000000000000000000000000000
+PCR 16: 0000000000000000000000000000000000000000
+PCR 17: ffffffffffffffffffffffffffffffffffffffff
+PCR 18: ffffffffffffffffffffffffffffffffffffffff
+PCR 19: ffffffffffffffffffffffffffffffffffffffff
+PCR 20: ffffffffffffffffffffffffffffffffffffffff
+PCR 21: ffffffffffffffffffffffffffffffffffffffff
+PCR 22: ffffffffffffffffffffffffffffffffffffffff
+PCR 23: ffffffffffffffffffffffffffffffffffffffff
+----
+
+Reading Key handles TPM 1.1 style
+TPM_KEY_HANDLES_LIST: 0 loaded handles
+
+----
+
+Reading KEY handles (TPM 1.2 style) ...
+(0 handles):
+
+----
+
+Reading CONTEXT handles (TPM 1.2 style) ...
+(0 handles):
+
+----
+
+Reading AUTH SESSION handles (TPM 1.2 style) ...
+(0 handles):
+
+----
+
+Reading TRANSPORT SESSION handles (TPM 1.2 style) ...
+(0 handles):
+
+----
+
+Reading monotonic counters (TPM 1.2 only) ...
+(0 counters):
+
+----
+</pre>
+
+
+<h4>Taking Ownership</h4>
+
+Without needing to reboot, you can now take ownership of your TPM.
+The following takes ownership using "tpmowner" as the password,
+and a "null" for the SRK password.  Under TPM/J, using a "null"
+for a key authorization password specifies that
+authorization is not required for the key
+(i.e., in the case of TPM commands that require key authorization,
+the command can be used without using an OIAP or OSAP authorization).
+In cases where authorization is required, 20-bytes of zeroes
+is used.
+<pre>
+lfgs@tpm0:~/tpm/tpmjdemo$ java edu.mit.csail.tpmj.tools.TPMTakeOwnership tpmowner
+
+Parsing command-line arguments ...
+
+ownerPwd = tpmowner, Encoded (Infineon/Vista (SHA1 of UTF16LE without null terminator) = 4ddb6f65c4d692cab6e3df8b7546228855578946
+srkPwd = null, Encoded (NULL [no authorization]) = null
+Executing TPM_SelfTestFull() ...
+Done in 958 ms.
+Executing TPM_GetTestResult() ...
+Done in 14 ms.
+Results: 00 7f ff 80
+keyInfo: Tag: 0x101
+Fill: 0x0
+Key Usage: 0x11
+Key Flags: 0x0
+AuthDataUsage: 0x0
+algorithmParms: TPM_KEY_PARMS: algorithmID= 0x1, encScheme= 0x3, sigScheme= 0x1
+Parm (12 bytes):
+TPM_RSA_KEY_PARMS: keyLength=2048, numPrimes=2, exponent (0 bytes):
+PCRInfo (0 bytes):
+pubKey: TPM_STORE_PUBKEY (0 bytes):
+encData (0 bytes):
+
+Reading pub EK ...
+Public Endorsement Key: TPM_PUBKEY:
+algorithmParms = TPM_KEY_PARMS: algorithmID= 0x1, encScheme= 0x3, sigScheme= 0x1
+Parm (12 bytes):
+TPM_RSA_KEY_PARMS: keyLength=2048, numPrimes=2, exponent (0 bytes):
+pubKey: TPM_STORE_PUBKEY (256 bytes):
+e2 12 e1 00 f2 26 ff e7 bd 0e cd 38 2b 84 84 bd d6 2d 10 f7
+3c 19 ce 98 76 2b 71 de 1e cb 27 09 84 31 2c d3 1d a3 6e 3d
+42 0f 93 7f c0 4b ae 6a 1f f2 fd b6 58 43 3e 93 ac 96 3c b0
+4e 1e 7f 56 31 80 c1 95 36 22 3a bb 0b a7 68 6f c3 3a 54 a8
+01 83 1f 6a 54 99 2f 37 21 50 02 0d 5a 81 e9 7d 0c c7 f6 86
+84 26 b9 fe 81 9b 16 80 c8 b2 2f 62 e8 9d 2c dd ee f5 b1 56
+d3 22 2a 96 a3 11 30 1f 42 75 40 5c 4e 49 5b dd 3a 12 d1 ca
+ec 29 c9 8e 3e 96 a0 4c 95 6f b0 f1 db d7 e1 15 a4 92 68 64
+41 04 00 b6 72 bd f7 d0 97 61 e5 a4 c9 90 42 80 b1 34 d4 23
+02 af cc 4a 4d 98 4b c0 bc 1d 38 e3 72 5f e3 6b 35 b7 84 97
+8f c1 d6 0d 0f a4 8b 39 5d 3b 1d 07 1d 38 68 ad 24 91 a5 b1
+6d b9 1b 68 65 0f 8c ec 66 72 0b cb 35 5b 98 4c e7 cd 22 7f
+2e ca 98 88 4a 44 8c fb 15 7c 48 6a 7d 32 9a d1
+
+encOwnerAuth =
+d9 d6 8f 5a f4 48 d4 71 5d 49 66 95 08 96 f0 80 82 b7 9f 43
+e8 ca a2 50 0c c0 06 c8 35 21 44 ff f2 a3 50 21 51 3e 6b ac
+8a 3f d7 a0 8e 57 6d 70 f9 34 47 7a be 02 53 d0 0f 93 32 30
+53 e2 2f 3b 9b d6 1c d8 89 c5 ef 32 10 02 43 11 41 11 00 8a
+ab 3f 65 31 92 49 22 cc 81 ab 7c 53 0a 1a 24 6d 2e a8 07 a4
+99 08 8c 15 aa b0 1f 01 d0 e5 59 ff 65 72 63 c2 04 95 07 f8
+e0 89 50 e4 16 d6 91 e6 08 e6 e1 1b fc 2f b0 62 22 d8 1a 0a
+31 93 ad d1 25 69 43 8f 8f 2a 0c a8 b7 12 3c f4 c6 3c c6 1d
+e5 2a 0f 5c 3d c8 99 d7 8f 4d b8 86 f4 9a ae d7 93 63 4f 06
+2e d0 7a 91 39 1a 84 7d 5d 4f 0c e5 00 13 73 0c b6 bd 33 8b
+51 a6 f1 3f d0 61 3f b8 08 63 b3 89 3b 8d 19 f5 1b c5 e7 21
+90 b8 1f da 9f e6 66 bf 76 dc 04 89 a6 6d b3 c5 12 f2 ab ce
+55 be 98 88 97 12 a7 6a 0c 9b c2 fe c3 9d 6d de
+
+encSrkAuth =
+ce 34 6e 12 e4 ea e4 ac ae a6 ef 6f b4 b2 b7 3e 09 07 fb aa
+69 c9 68 db 15 da 84 3c c9 f3 32 47 24 4e c5 11 e1 db 72 73
+eb fb 8b 0b 18 71 1c 05 3e 5b 9c d6 ed 61 ab 4a a2 ad f8 c6
+e7 35 47 22 66 3c 3f b2 1d fb 9f b3 96 9b cb c2 dd 11 d6 2f
+0c 66 b0 43 d6 2e 1c 74 f5 19 06 15 3e c6 fc 40 c1 a7 4f 33
+71 c4 18 ba 6a 74 a2 b3 33 dc 30 e9 89 fe a6 94 18 f3 a7 d6
+79 9d 57 66 1c 50 59 37 58 ff dc 6e 54 7c aa 74 a6 9e a8 27
+16 66 21 76 07 21 b5 50 fc a5 53 3e 7d 0a 20 66 ad d3 2f c5
+d3 d1 ec 23 9b 6e c3 9f d4 ee 27 6e 53 9e c7 16 03 38 66 d8
+37 16 44 a3 6b fd af 58 d8 87 35 59 af 3e 3b e1 bd 6a 8b 7a
+78 aa 6b 6e 2a a2 6b 99 9b 69 f0 c9 46 d3 25 39 6d 70 8f c1
+62 23 d2 91 0e 8e a5 2d d7 1d 23 99 c4 d4 40 14 71 cb 97 1f
+2d cb 95 ce c5 f7 05 fb a6 f7 6c 9d e5 9a 0c d0
+
+Executing take ownership command ...
+Returned srk pub: Tag: 0x101
+Fill: 0x0
+Key Usage: 0x11
+Key Flags: 0x0
+AuthDataUsage: 0x0
+algorithmParms: TPM_KEY_PARMS: algorithmID= 0x1, encScheme= 0x3, sigScheme= 0x1
+Parm (12 bytes):
+TPM_RSA_KEY_PARMS: keyLength=2048, numPrimes=2, exponent (0 bytes):
+PCRInfo (0 bytes):
+pubKey: TPM_STORE_PUBKEY (256 bytes):
+c5 22 39 bf cc 1d 73 d3 20 71 cf ea 62 ae 03 5d 81 92 1b 53
+a3 e1 be 50 3b 23 6e ba 76 a9 73 83 19 b4 b5 9b 23 cd 52 e0
+9f d1 62 ab b2 8f d4 05 18 d1 fe f0 23 f4 5b fe 06 d3 b3 47
+b0 67 41 ec c6 64 24 7b 61 99 31 65 f8 a1 10 38 2a 65 82 08
+85 e4 47 11 dc f2 9a 48 81 16 12 2c a6 0b 90 f2 c5 52 92 92
+37 b7 c6 ad 2e 55 49 c5 fd ed f1 8b d9 4a 29 56 62 25 3b 9c
+13 e9 89 da 57 40 5b d7 39 58 94 52 f5 1b 13 26 9a 1e 66 71
+ff d2 d8 2a 3c 09 63 d7 59 07 f8 de e6 8d 7a 98 33 9c 4e ed
+fb 14 ac d4 0d d6 fa f1 fe 46 09 94 d7 3d 5d c0 89 66 2a 92
+20 c5 35 f0 0d d2 ad dc 0b 5f a2 bd 04 b5 1e 78 54 6c 0c ba
+59 6e 05 ca 38 a2 5f 27 ff 1c f9 16 a2 50 c1 12 d5 1e d4 d2
+e3 88 0c a7 d2 a9 50 c5 ee ed 6f 9a b0 da 1f 98 91 88 b6 33
+61 a9 77 f3 39 31 b0 89 02 84 27 73 58 6f ae ed
+
+encData (0 bytes):
+
+Equal to blob? true
+Writing srk.pubkey ...
+
+lfgs@tpm0:~/tpm/tpmjdemo$ ls -l
+total 4
+-rw-r--r-- 1 lfgs lfgs 303 2007-04-02 16:27 srk.pubkey
+</pre>
+
+Running TPMInfo again (this time with owner password):
+<pre>
+lfgs@tpm0:~/tpm/tpmjdemo$ java edu.mit.csail.tpmj.tools.TPMInfo tpmowner
+ownerPwd = tpmowner, Encoded (Infineon/Vista (SHA1 of UTF16LE without null terminator) = 4ddb6f65c4d692cab6e3df8b7546228855578946
+
+*****
+Getting manufacturer ID ...
+TPM VENDOR ID = 0x4252434d (BRCM)
+----
+
+Getting version via TPM 1.1 way ...
+Returned: edu.mit.csail.tpmj.structs.TPM_STRUCT_VER: 01 01 00 00
+
+----
+
+Getting version via TPM 1.2 way ...
+Returned: edu.mit.csail.tpmj.structs.TPM_CAP_VERSION_INFO: 00 30 01 02 02 12 00 00 00 42 52 43 4d 00 00
+tag: 0x30
+version: edu.mit.csail.tpmj.structs.TPM_VERSION: 01 02 02 12
+specLevel: 0x0
+errataRev: 0x0
+tpmVendorID: 0x4252434d
+vendorSpecificSize: 0x0
+vendorSpecific:
+
+----
+
+Getting TPM Flags (TPM 1.2 only) ...
+Getting TPM Permanent Flags ...
+Returned: TPM_PERMANENT_FLAGS:
+disable: false
+ownership: true
+deactivated: false
+readPubek: false
+disableOwnerClear: false
+allowMaintenance: false
+physicalPresenceLifetimeLock: true
+physicalPresenceHWEnable: false
+physicalPresenceCMDEnable: true
+CEKPUsed: false
+TPMpost: false
+TPMpostLock: false
+FIPS: false
+operator: false
+enableRevokeEK: false
+nvLocked: false
+readSRKPub: true
+tpmEstablished: true
+
+Getting TPM Volatile Flags ...
+Returned: TPM_STCLEAR_FLAGS:
+deactivated: false
+disableForceClear: false
+physicalPresence: false
+physicalPresenceLock: true
+bGlobalLock: false
+
+----
+
+Reading Public Endorsement Key using TPM_OwnerReadInternalPub (TPM 1.2 only) ...
+Public Endorsement Key:
+TPM_PUBKEY:
+algorithmParms = TPM_KEY_PARMS: algorithmID= 0x1, encScheme= 0x3, sigScheme= 0x1
+Parm (12 bytes):
+TPM_RSA_KEY_PARMS: keyLength=2048, numPrimes=2, exponent (0 bytes):
+pubKey: TPM_STORE_PUBKEY (256 bytes):
+e2 12 e1 00 f2 26 ff e7 bd 0e cd 38 2b 84 84 bd d6 2d 10 f7
+3c 19 ce 98 76 2b 71 de 1e cb 27 09 84 31 2c d3 1d a3 6e 3d
+42 0f 93 7f c0 4b ae 6a 1f f2 fd b6 58 43 3e 93 ac 96 3c b0
+4e 1e 7f 56 31 80 c1 95 36 22 3a bb 0b a7 68 6f c3 3a 54 a8
+01 83 1f 6a 54 99 2f 37 21 50 02 0d 5a 81 e9 7d 0c c7 f6 86
+84 26 b9 fe 81 9b 16 80 c8 b2 2f 62 e8 9d 2c dd ee f5 b1 56
+d3 22 2a 96 a3 11 30 1f 42 75 40 5c 4e 49 5b dd 3a 12 d1 ca
+ec 29 c9 8e 3e 96 a0 4c 95 6f b0 f1 db d7 e1 15 a4 92 68 64
+41 04 00 b6 72 bd f7 d0 97 61 e5 a4 c9 90 42 80 b1 34 d4 23
+02 af cc 4a 4d 98 4b c0 bc 1d 38 e3 72 5f e3 6b 35 b7 84 97
+8f c1 d6 0d 0f a4 8b 39 5d 3b 1d 07 1d 38 68 ad 24 91 a5 b1
+6d b9 1b 68 65 0f 8c ec 66 72 0b cb 35 5b 98 4c e7 cd 22 7f
+2e ca 98 88 4a 44 8c fb 15 7c 48 6a 7d 32 9a d1
+
+----
+
+
+Getting number of PCRS:
+numPcrs = 24
+Reading PCRs
+PCR 0: 0000000000000000000000000000000000000000
+PCR 1: 0000000000000000000000000000000000000000
+PCR 2: 0000000000000000000000000000000000000000
+PCR 3: 0000000000000000000000000000000000000000
+PCR 4: 0000000000000000000000000000000000000000
+PCR 5: 0000000000000000000000000000000000000000
+PCR 6: 0000000000000000000000000000000000000000
+PCR 7: 0000000000000000000000000000000000000000
+PCR 8: 0000000000000000000000000000000000000000
+PCR 9: 0000000000000000000000000000000000000000
+PCR 10: 0000000000000000000000000000000000000000
+PCR 11: 0000000000000000000000000000000000000000
+PCR 12: 0000000000000000000000000000000000000000
+PCR 13: 0000000000000000000000000000000000000000
+PCR 14: 0000000000000000000000000000000000000000
+PCR 15: 0000000000000000000000000000000000000000
+PCR 16: 0000000000000000000000000000000000000000
+PCR 17: ffffffffffffffffffffffffffffffffffffffff
+PCR 18: ffffffffffffffffffffffffffffffffffffffff
+PCR 19: ffffffffffffffffffffffffffffffffffffffff
+PCR 20: ffffffffffffffffffffffffffffffffffffffff
+PCR 21: ffffffffffffffffffffffffffffffffffffffff
+PCR 22: ffffffffffffffffffffffffffffffffffffffff
+PCR 23: ffffffffffffffffffffffffffffffffffffffff
+----
+
+Reading Key handles TPM 1.1 style
+TPM_KEY_HANDLES_LIST: 0 loaded handles
+
+----
+
+Reading KEY handles (TPM 1.2 style) ...
+(0 handles):
+
+----
+
+Reading CONTEXT handles (TPM 1.2 style) ...
+(0 handles):
+
+----
+
+Reading AUTH SESSION handles (TPM 1.2 style) ...
+(0 handles):
+
+----
+
+Reading TRANSPORT SESSION handles (TPM 1.2 style) ...
+(0 handles):
+
+----
+
+Reading monotonic counters (TPM 1.2 only) ...
+(0 counters):
+
+----
+</pre>
+
+<h4>Create an AIK</h4>
+
+<pre>
+lfgs@tpm0:~/tpm/tpmjdemo$ java edu.mit.csail.tpmj.tools.TPMCreateAIK aik.key test 0x1234567890123456789012345678901234567890 tpmowner
+
+Parsing command-line arguments ...
+
+aikPwd = test, Encoded (Infineon/Vista (SHA1 of UTF16LE without null terminator) = 87f8ed9157125ffc4da9e06a7b8011ad80a53fe1
+labelPrivCA = 0x1234567890123456789012345678901234567890, Encoded (Hex) = 1234567890123456789012345678901234567890
+ownerPwd = tpmowner, Encoded (Infineon/Vista (SHA1 of UTF16LE without null terminator) = 4ddb6f65c4d692cab6e3df8b7546228855578946
+srkPwd = null, Encoded (NULL [no authorization]) = null
+Executing TPM_SelfTestFull() ...
+Done in 959 ms.
+Executing TPM_GetTestResult() ...
+Done in 13 ms.
+Results: 00 7f ff 80
+Creating Identity Key ...
+DONE.
+
+ID KEY = Tag: 0x101
+Fill: 0x0
+Key Usage: 0x12
+Key Flags: 0x0
+AuthDataUsage: 0x1
+algorithmParms: TPM_KEY_PARMS: algorithmID= 0x1, encScheme= 0x1, sigScheme= 0x2
+Parm (12 bytes):
+TPM_RSA_KEY_PARMS: keyLength=2048, numPrimes=2, exponent (0 bytes):
+PCRInfo (0 bytes):
+pubKey: TPM_STORE_PUBKEY (256 bytes):
+ab 00 a8 bc 6f 7b 5b d6 8b 56 f2 aa 0a 00 d7 33 0e 50 fa 15
+83 5c 8e 69 06 e5 f9 65 14 18 3b 06 b3 c7 3a b6 9c 53 22 5c
+d4 4a b0 24 fd 4c d6 62 43 d0 b3 3f 76 9a a4 c9 8c a1 6a f6
+80 16 d3 c9 5e ad 70 97 e7 b3 77 10 a6 38 df 81 26 84 0b 9d
+00 70 e7 13 78 eb 70 6f cf 76 64 4e 35 de 71 c7 cb a7 bd e0
+8e 7a 39 5b 7d 6e 7d 62 b5 b0 85 d1 6f 7b 15 b2 e6 f1 8d 95
+d6 71 ee db fe 87 4a 72 d9 ad 4a 70 c2 b1 9d 4f 55 cb 25 50
+c4 5b ea 14 d3 91 d1 46 37 f6 86 d3 37 bb 1c 53 f4 61 e5 6f
+89 f7 ef 6d 88 e7 21 3f c3 73 7d a9 92 89 54 b3 5f 8f 04 fc
+cf b9 74 c7 8a 18 5d 5b fd 06 4d f6 7d 2f 5c 36 37 77 c5 67
+7f 9d 43 23 70 da 0d 36 fd be a7 1f 9d 5d d5 78 48 9b a6 07
+e4 7e 3b 33 84 84 44 9c a3 72 dc 77 41 d5 79 6b 93 96 8d 2f
+d8 06 e9 34 85 f9 42 0c d7 ad f8 21 4f c3 f1 85
+
+encData (256 bytes):
+00 0d ed 90 20 fa fe ca 03 ca a1 ff ab 9a d1 99 be 6f 44 cf
+ce b6 c2 e2 13 a6 53 46 d2 48 87 95 5d a2 1b b5 4d ac fa f1
+76 08 9d d0 02 0c 42 ff 22 21 04 38 e9 50 96 2f e1 eb b5 a7
+fa 04 c1 1e 96 57 7d ac ca 38 70 58 54 75 14 a4 c0 92 a6 d9
+a8 63 b8 ab 58 96 73 1a 1b a8 3d ce 7e 9c be c9 9b 2f 34 18
+9f 7e 3f 10 e7 68 ef 30 87 73 ca 95 82 9f 77 1a 0a e4 35 6f
+f5 70 fc 42 1e b5 3d 8b f6 13 06 59 ec 1a 29 e1 9a f0 77 0e
+ac f5 bd b5 55 8d 92 d0 1c db d0 09 0f a8 a2 7a 51 19 f7 97
+8e db f2 dc 58 37 d0 97 7a 12 f6 52 72 75 74 c9 f9 e4 7e d0
+c5 15 fe 66 7b 94 8e 60 57 6d 5d c4 c8 db 8f 12 9d 2a 13 4b
+a1 bd 03 f2 22 65 7a 53 0f 10 9b e0 bf 28 9b af b5 fc 31 14
+6f b4 d3 af f9 04 df a4 3e 4c 69 91 7f 2b 2b d8 11 a1 8f 7e
+de 72 e5 0b f4 d3 9a e4 14 2a 2e 97 2b f8 cd 4c
+
+
+
+Identity Binding = (256 bytes):
+
+a5 b6 89 9e 4f 7c 35 61 56 83 b4 cd 5f 8a 38 ee 21 fd 35 68
+b1 28 ed ca f2 be a6 56 a2 9f 22 d7 82 3c 41 3a f9 c1 e4 13
+0b 14 b9 94 42 62 26 f5 8e 85 7e a1 17 d1 f9 75 25 00 e9 a2
+f0 33 14 95 d5 57 55 62 bd e8 6c 06 44 aa ed da 69 7f 5b 31
+b3 00 03 9e 16 14 0e d8 b2 b2 6d 08 2a 4e 1f e7 7a 15 fe 12
+f7 77 9d 74 43 5a 6f 32 d3 e4 27 6c 32 80 22 38 87 eb ce 1c
+82 ba 12 a2 71 9d 74 ed f1 69 02 d1 56 28 28 91 7d b0 e2 bd
+ee 10 b7 a3 50 f8 bf 5b f2 0e a4 de 82 9f 95 bc d7 ef 87 eb
+88 ff 00 11 f2 5a ce a2 1f 03 38 7c 6e 5d 70 46 5e e4 36 0e
+07 f7 0e 63 f1 35 fa 76 cd da 47 96 12 fc c5 6d c9 32 45 87
+e8 a8 5a 6c 1b dc 00 b0 02 00 37 2a a9 bc ac 16 80 3b 85 c4
+86 ce d0 39 ff 5f f0 d0 1b 3d 62 ad 23 fd 34 d5 5a 9c fc 72
+3c 51 d9 e2 88 42 aa 09 a7 9f b0 fb af ed 92 78
+
+Writing aik.key ...
+
+
+ **** NOW TESTING THE NEW AIK ****
+
+Reading aik.key ...
+buf == blob?true
+Key from file: Tag: 0x101
+Fill: 0x0
+Key Usage: 0x12
+Key Flags: 0x0
+AuthDataUsage: 0x1
+algorithmParms: TPM_KEY_PARMS: algorithmID= 0x1, encScheme= 0x1, sigScheme= 0x2
+Parm (12 bytes):
+TPM_RSA_KEY_PARMS: keyLength=2048, numPrimes=2, exponent (0 bytes):
+PCRInfo (0 bytes):
+pubKey: TPM_STORE_PUBKEY (256 bytes):
+ab 00 a8 bc 6f 7b 5b d6 8b 56 f2 aa 0a 00 d7 33 0e 50 fa 15
+83 5c 8e 69 06 e5 f9 65 14 18 3b 06 b3 c7 3a b6 9c 53 22 5c
+d4 4a b0 24 fd 4c d6 62 43 d0 b3 3f 76 9a a4 c9 8c a1 6a f6
+80 16 d3 c9 5e ad 70 97 e7 b3 77 10 a6 38 df 81 26 84 0b 9d
+00 70 e7 13 78 eb 70 6f cf 76 64 4e 35 de 71 c7 cb a7 bd e0
+8e 7a 39 5b 7d 6e 7d 62 b5 b0 85 d1 6f 7b 15 b2 e6 f1 8d 95
+d6 71 ee db fe 87 4a 72 d9 ad 4a 70 c2 b1 9d 4f 55 cb 25 50
+c4 5b ea 14 d3 91 d1 46 37 f6 86 d3 37 bb 1c 53 f4 61 e5 6f
+89 f7 ef 6d 88 e7 21 3f c3 73 7d a9 92 89 54 b3 5f 8f 04 fc
+cf b9 74 c7 8a 18 5d 5b fd 06 4d f6 7d 2f 5c 36 37 77 c5 67
+7f 9d 43 23 70 da 0d 36 fd be a7 1f 9d 5d d5 78 48 9b a6 07
+e4 7e 3b 33 84 84 44 9c a3 72 dc 77 41 d5 79 6b 93 96 8d 2f
+d8 06 e9 34 85 f9 42 0c d7 ad f8 21 4f c3 f1 85
+
+encData (256 bytes):
+00 0d ed 90 20 fa fe ca 03 ca a1 ff ab 9a d1 99 be 6f 44 cf
+ce b6 c2 e2 13 a6 53 46 d2 48 87 95 5d a2 1b b5 4d ac fa f1
+76 08 9d d0 02 0c 42 ff 22 21 04 38 e9 50 96 2f e1 eb b5 a7
+fa 04 c1 1e 96 57 7d ac ca 38 70 58 54 75 14 a4 c0 92 a6 d9
+a8 63 b8 ab 58 96 73 1a 1b a8 3d ce 7e 9c be c9 9b 2f 34 18
+9f 7e 3f 10 e7 68 ef 30 87 73 ca 95 82 9f 77 1a 0a e4 35 6f
+f5 70 fc 42 1e b5 3d 8b f6 13 06 59 ec 1a 29 e1 9a f0 77 0e
+ac f5 bd b5 55 8d 92 d0 1c db d0 09 0f a8 a2 7a 51 19 f7 97
+8e db f2 dc 58 37 d0 97 7a 12 f6 52 72 75 74 c9 f9 e4 7e d0
+c5 15 fe 66 7b 94 8e 60 57 6d 5d c4 c8 db 8f 12 9d 2a 13 4b
+a1 bd 03 f2 22 65 7a 53 0f 10 9b e0 bf 28 9b af b5 fc 31 14
+6f b4 d3 af f9 04 df a4 3e 4c 69 91 7f 2b 2b d8 11 a1 8f 7e
+de 72 e5 0b f4 d3 9a e4 14 2a 2e 97 2b f8 cd 4c
+
+
+Loading the key into the TPM ...
+keyHandle = 0x105bc93
+Reading the public key ...
+PubKey=TPM_PUBKEY:
+algorithmParms = TPM_KEY_PARMS: algorithmID= 0x1, encScheme= 0x1, sigScheme= 0x2
+Parm (12 bytes):
+TPM_RSA_KEY_PARMS: keyLength=2048, numPrimes=2, exponent (0 bytes):
+pubKey: TPM_STORE_PUBKEY (256 bytes):
+ab 00 a8 bc 6f 7b 5b d6 8b 56 f2 aa 0a 00 d7 33 0e 50 fa 15
+83 5c 8e 69 06 e5 f9 65 14 18 3b 06 b3 c7 3a b6 9c 53 22 5c
+d4 4a b0 24 fd 4c d6 62 43 d0 b3 3f 76 9a a4 c9 8c a1 6a f6
+80 16 d3 c9 5e ad 70 97 e7 b3 77 10 a6 38 df 81 26 84 0b 9d
+00 70 e7 13 78 eb 70 6f cf 76 64 4e 35 de 71 c7 cb a7 bd e0
+8e 7a 39 5b 7d 6e 7d 62 b5 b0 85 d1 6f 7b 15 b2 e6 f1 8d 95
+d6 71 ee db fe 87 4a 72 d9 ad 4a 70 c2 b1 9d 4f 55 cb 25 50
+c4 5b ea 14 d3 91 d1 46 37 f6 86 d3 37 bb 1c 53 f4 61 e5 6f
+89 f7 ef 6d 88 e7 21 3f c3 73 7d a9 92 89 54 b3 5f 8f 04 fc
+cf b9 74 c7 8a 18 5d 5b fd 06 4d f6 7d 2f 5c 36 37 77 c5 67
+7f 9d 43 23 70 da 0d 36 fd be a7 1f 9d 5d d5 78 48 9b a6 07
+e4 7e 3b 33 84 84 44 9c a3 72 dc 77 41 d5 79 6b 93 96 8d 2f
+d8 06 e9 34 85 f9 42 0c d7 ad f8 21 4f c3 f1 85
+
+Trying TPM_Quote of PCR 0 ...
+output=TPM_QuoteOutput (data params only):
+PCRData =
+TPM_PCR_COMPOSITE:
+select = TPM_PCR_SELECTION for 24 PCRs: 0 (0x010000)
+PcrValues (numValues=1, valueSize=20):
+0000000000000000000000000000000000000000
+
+Signature (256 bytes): 880d8e69fbb7544a64905bc2b89354cf5feeae750a88c1fd0645d4d6bf5483dcffbc7b907628828913e420343156e1249ba4eb807d3f14d55d67415e7e83a55b57c14869b190e193e214e479d12e66d2561bc3f00fe8ee88c713de6bb5397deee4ed6552a07f712ae827a80b4c2272ad7346363399fa9a6138e41bb098dc78a0e4926ee22fec0566d046d63d5230dc9d17b69efcb0cbb96b9729b325768ff96c8f21fdf37685209f6a80cef49dfe1068b5865ef47762d935968e27c1ebb88a22726ca843ebf6b927325a56199bc24c008d781aff57bba3e5d11a014fdd9677ab57dfbb1547bd02b42f38126a163e431ad5ce4a9e1a6e550d10561055e3c684e0
+Verifying signature by software ...
+OK? true
+
+
+ **** NOW TESTING SIGNING OF ARBITRARY DATA (THIS SHOULD FAIL!) ****
+
+Trying to sign 'Hello World!' ... (THIS SHOULD FAIL)
+TPM Exception: edu.mit.csail.tpmj.TPMErrorReturnCodeException
+Occured on input: edu.mit.csail.tpmj.commands.TPM_Sign:
+00 c2 00 00 00 53 00 00 00 3c 01 05 bc 93 00 00 00 14 2e f7
+bd e6 08 ce 54 04 e9 7d 5f 04 2f 95 f8 9f 1c 23 28 71 00 05
+bc 96 b3 2d 94 32 dc bb af 4b ab fb b4 ec 02 24 aa 5a 8b 06
+f3 9b 00 55 fc 98 56 34 05 05 ad db 0e b7 e7 ca eb e8 c9 24
+d7 5f 24
+
+Output (if any): edu.mit.csail.tpmj.structs.ByteArrayTPMOutputStruct: 00 c4 00 00 00 0a 00 00 00 24
+Return Code (if any): 36 (TPM_INVALID_KEYUSAGE)
+
+
+Evicting keyHandle: 0x105bc93
+OK
+
+lfgs@tpm0:~/tpm/tpmjdemo$ ls -l
+total 8
+-rw-r--r-- 1 lfgs lfgs 559 2007-04-02 16:31 aik.key
+-rw-r--r-- 1 lfgs lfgs 303 2007-04-02 16:27 srk.pubkey
+</pre>
+
+<h4>Create a legacy key</h4>
+
+A legacy key is good for signing and unbinding.
+Use of such keys has been deprecated since TPM 1.2 for security reasons
+but we use it here because it is good for demo purposes.
+
+<pre>
+lfgs@tpm0:~/tpm/tpmjdemo$ java edu.mit.csail.tpmj.tools.TPMCreateKey testkey.key l test SRK /m test
+
+Parsing command-line arguments ...
+
+keyType = l
+keyPwd = test, Encoded (Infineon/Vista (SHA1 of UTF16LE without null terminator) = 87f8ed9157125ffc4da9e06a7b8011ad80a53fe1
+Using SRK as parent.
+parentPwd = null, Encoded (NULL [no authorization]) = null
+m = test, Encoded (Infineon/Vista (SHA1 of UTF16LE without null terminator) = 87f8ed9157125ffc4da9e06a7b8011ad80a53fe1
+Key will be migratable.
+
+Creating the Key ...
+Returned wrapped key: Tag: 0x101
+Fill: 0x0
+Key Usage: 0x15
+Key Flags: 0x2
+AuthDataUsage: 0x1
+algorithmParms: TPM_KEY_PARMS: algorithmID= 0x1, encScheme= 0x3, sigScheme= 0x2
+Parm (12 bytes):
+TPM_RSA_KEY_PARMS: keyLength=2048, numPrimes=2, exponent (0 bytes):
+PCRInfo (0 bytes):
+pubKey: TPM_STORE_PUBKEY (256 bytes):
+d1 6d 2d 43 c4 19 95 bc ab 65 75 24 f1 56 66 45 5f de 4d 57
+63 eb 05 7e 96 85 a3 7e 08 93 97 25 43 2f 8d 5f 10 60 a4 8e
+97 eb b0 4d 17 81 98 1a 49 9f 62 5b 4d a3 96 c5 9c 2f a1 07
+18 44 b6 57 36 3e c5 eb f1 d1 17 1a 27 82 87 c5 b4 88 5e 05
+24 5d 42 8c 2a d9 e3 52 5c 60 12 99 e7 57 6c d2 4b c1 c3 03
+04 6b 7a eb 52 5e 08 14 01 6f b3 30 e0 14 c5 2a dd 18 a7 9a
+93 c0 49 7d 46 2a ec 02 1a df cd 0b 07 15 59 8b 04 2d 24 b7
+47 18 e1 1d bc 2a c8 ff b4 40 2a ed 5f 13 2b d9 2f 02 0b bb
+45 d8 ac 6e ee f6 0a 25 6c 02 eb 14 93 84 ed 57 bc c1 0f 67
+d7 14 08 d8 9e 3a 66 10 c7 54 3e 58 b1 ee f7 5f 06 be 0e 94
+f6 ad 92 47 41 61 97 f0 94 27 17 8c a9 9d 3e f1 9a 6c 01 c9
+2c cf 31 d4 87 8c c9 ef 18 45 3d bb c4 53 07 90 dc 12 70 80
+2a 28 3a 77 c1 71 87 c5 46 8d 81 06 e4 6c 1a 1d
+
+encData (256 bytes):
+43 e2 e5 10 3e 4a c7 07 a9 17 b0 a6 79 0d 82 56 f4 78 b5 04
+b3 5b 05 b4 4f 6d 63 ac ca 41 10 cb cf a5 ec 4d 09 eb 18 10
+b4 41 25 5a b4 d1 44 75 05 11 f2 07 a1 fc 99 77 fb d3 41 99
+97 d9 34 7b 26 c7 94 cc 60 a4 ab c8 e1 9b 39 34 79 f2 4e 0c
+a2 03 06 62 2c 95 b3 6e 84 dd 59 d4 8a d8 68 0c 01 e8 ec d6
+ce 6b 68 62 0a 06 72 fd 63 b9 e6 99 1a 59 a5 63 b9 6c d2 43
+df 5e 52 1a 45 54 0f 78 18 5a 4c fe 5c b5 28 51 14 d8 95 18
+36 15 72 43 78 fd 95 e0 9e 20 4b 71 97 d4 74 0a 16 48 4c d2
+d8 1d 2a 05 3f 11 90 75 f4 95 54 58 42 c5 4a 2d c2 0e 04 27
+70 72 e5 79 ab 5f 61 b2 78 32 de 9a 51 9c 2d ea 67 6d 0b db
+b4 42 ae 9c e2 c8 99 06 a1 fa 12 c8 c6 83 1f b0 62 f4 7e 74
+ea 39 c8 ad 9d a1 06 fb ab aa aa bf c1 9f 98 d4 46 a9 78 ef
+51 f2 ea 19 07 99 21 7c de 51 22 76 2d 8d e7 b1
+
+
+
+Writing testkey.key ...
+
+Loading the key into the TPM ...
+keyHandle = 0x105bc98
+
+Reading the public key ...
+PubKey=TPM_PUBKEY:
+algorithmParms = TPM_KEY_PARMS: algorithmID= 0x1, encScheme= 0x3, sigScheme= 0x2
+Parm (12 bytes):
+TPM_RSA_KEY_PARMS: keyLength=2048, numPrimes=2, exponent (0 bytes):
+pubKey: TPM_STORE_PUBKEY (256 bytes):
+d1 6d 2d 43 c4 19 95 bc ab 65 75 24 f1 56 66 45 5f de 4d 57
+63 eb 05 7e 96 85 a3 7e 08 93 97 25 43 2f 8d 5f 10 60 a4 8e
+97 eb b0 4d 17 81 98 1a 49 9f 62 5b 4d a3 96 c5 9c 2f a1 07
+18 44 b6 57 36 3e c5 eb f1 d1 17 1a 27 82 87 c5 b4 88 5e 05
+24 5d 42 8c 2a d9 e3 52 5c 60 12 99 e7 57 6c d2 4b c1 c3 03
+04 6b 7a eb 52 5e 08 14 01 6f b3 30 e0 14 c5 2a dd 18 a7 9a
+93 c0 49 7d 46 2a ec 02 1a df cd 0b 07 15 59 8b 04 2d 24 b7
+47 18 e1 1d bc 2a c8 ff b4 40 2a ed 5f 13 2b d9 2f 02 0b bb
+45 d8 ac 6e ee f6 0a 25 6c 02 eb 14 93 84 ed 57 bc c1 0f 67
+d7 14 08 d8 9e 3a 66 10 c7 54 3e 58 b1 ee f7 5f 06 be 0e 94
+f6 ad 92 47 41 61 97 f0 94 27 17 8c a9 9d 3e f1 9a 6c 01 c9
+2c cf 31 d4 87 8c c9 ef 18 45 3d bb c4 53 07 90 dc 12 70 80
+2a 28 3a 77 c1 71 87 c5 46 8d 81 06 e4 6c 1a 1d
+
+
+Trying to sign 'Hello World!' ...
+Signature returned (256 bytes): ca850712db785bbe9cb944e8288d3989f891a1f10ee956dd6a3a342ce50ba48f1daf1df48a2d48c77a8924ae81425952a65157a2a95cf9196786555da8aa3cae517646a03e6b825c56ae650bfece89489be9d9e45657df179c16498734f317bd254c2385a366b1fc04f8c086ef791fdd3efdfcae16132bca09cfc398a73533c4067ed81e048eb963e33093437eed429361c9e57015722b8ecc091ae08586e6fd9e8d0d9f89821d58a151976b605b5a4e3d32ff0b9d556627cf33981762dee7c8872aca5397ab0f4a0110ef343bd79f51fa2cb86c2b83c820ea0eeba40e76ead7292a973aa86c33d4e986417760765874bd00071146f129b9c39d0d0fba92b645
+Verifying signature ...
+Signature OK? true
+
+Binding 'Hello World!' ...
+Encrypted Data (256 bytes): b9d0adc4c7226f26341f8821b3cb7a266e4fc664d90dca6e2787fccb8d546b02a0e2e1582ae73bdebf2aeff2b81aa223c52c43164d76ff79a6070c986649d96ec5d6aa97d05dd0384db094c4d7522cd085421af88efe188ef9d1618dfeec8d12d740cbba080431658718839c732871bedb196f7b9318cb020ba4248e8a5b00af846f6941c4deb92a34bfda6294020b7e36ee8f1ce168b7886041fcd3c5b8d397310eae2a66f2f43c494d00783e51a519607ea297a7624c205e69ff211f8ffe494d341963da511e94853435948c70f92e11e1a612d8e1ec5fb8670e3a68c085072884736b2327d36b5bbc0316972d74ea71e68b288da9a0c41d6845dfb1e9e163
+
+UnBinding 'Hello World!' ...
+Unbound Data returned (12 bytes): 48 65 6c 6c 6f 20 57 6f 72 6c 64 21
+Payload as string: Hello World!
+
+Evicting keyHandle: 0x105bc98
+OK
+
+
+lfgs@tpm0:~/tpm/tpmjdemo$ ls -l
+total 12
+-rw-r--r-- 1 lfgs lfgs 559 2007-04-02 16:31 aik.key
+-rw-r--r-- 1 lfgs lfgs 303 2007-04-02 16:27 srk.pubkey
+-rw-r--r-- 1 lfgs lfgs 559 2007-04-02 16:33 testkey.key
+</pre>
+
+
+<h4>Loading a key and using it for reading and signing</h4>
+
+To use a key, you need to load it first, get the handle,
+and then use the handle for operations.
+<pre>
+lfgs@tpm0:~/tpm/tpmjdemo$ java edu.mit.csail.tpmj.tools.TPMLoadKey testkey.key SRK ""
+
+Parsing command-line arguments ...
+
+Using SRK as parent.
+parentPwd = , Encoded (All zeros) = 0000000000000000000000000000000000000000
+
+Read testkey.key ...
+
+Loading the key into the TPM ...
+keyHandle = 0x105bc9d
+</pre>
+
+<h5>Signing and Verifying a Data File</h5>
+
+First, we create a simple data file to sign.
+<pre>
+lfgs@tpm0:~/tpm/tpmjdemo$ echo 'Hello World!' > HelloWorld.txt
+lfgs@tpm0:~/tpm/tpmjdemo$ cat HelloWorld.txt
+Hello World!
+</pre>
+
+Then, we sign it and verify it.  Note that verifying is done completely
+in software, without using the TPM to do it.
+<pre>
+lfgs@tpm0:~/tpm/tpmjdemo$ java edu.mit.csail.tpmj.tools.TPMSign HelloWorld.txt 0x105bc9d test
+
+Parsing command-line arguments ...
+
+keyPwd = test, Encoded (Infineon/Vista (SHA1 of UTF16LE without null terminator) = 87f8ed9157125ffc4da9e06a7b8011ad80a53fe1
+
+*** Reading Data *** ...
+Signature returned (256 bytes):
+4b 09 3b 05 22 57 b0 e9 93 fc 71 a8 c2 0a 29 2d d1 7d 76 35
+e3 9a c1 04 d4 71 e1 93 00 04 6d f2 c0 b8 48 03 68 c0 d8 8d
+2c 65 da 93 cf 43 c9 2b c4 3b 4c df 70 9d 51 e1 3e a9 16 97
+25 a8 28 01 23 02 22 5e 62 8d 48 f1 4e 4a 3c ea b8 cb d4 e0
+ce 93 4e 1e f2 3c 64 bd c6 44 c5 a1 db f4 9e 24 88 36 d8 33
+84 80 4e ec d8 5c 2b 0b 4e 0a 12 81 62 8a d0 70 94 8a 04 d8
+96 c1 92 4d bd 96 87 9d d5 06 75 e1 eb bd 14 0f c1 a6 72 1b
+58 f7 45 5a 2d f0 91 00 1b 2f 04 69 4e 6f 91 f9 c6 93 c4 75
+e0 fd fc e5 00 ad a0 ea 3d d5 38 74 f8 14 22 61 2b 24 6d 38
+90 41 fa d4 e8 81 d1 8f d1 38 41 50 04 4e 30 f2 55 8a 60 75
+37 23 6e 82 ff e4 28 09 7a 55 cd 1c ab 1a ef 62 2c 54 fb d1
+27 05 a0 88 d9 0b 8c 59 e5 1e 0c 03 76 22 d2 a0 31 65 f3 cd
+46 ec de 0a d0 47 52 63 d5 97 c8 dd 89 7c 7b b4
+
+Writing signature to file HelloWorld.txt.sig
+DONE.
+
+*** Verifying signature by software using public key ...
+Signature OK? true
+
+
+lfgs@tpm0:~/tpm/tpmjdemo$ ls -l
+total 20
+-rw-r--r-- 1 lfgs lfgs 559 2007-04-02 16:31 aik.key
+-rw-r--r-- 1 lfgs lfgs  13 2007-04-02 16:35 HelloWorld.txt
+-rw-r--r-- 1 lfgs lfgs 256 2007-04-02 16:36 HelloWorld.txt.sig
+-rw-r--r-- 1 lfgs lfgs 303 2007-04-02 16:27 srk.pubkey
+-rw-r--r-- 1 lfgs lfgs 559 2007-04-02 16:33 testkey.key
+
+
+lfgs@tpm0:~/tpm/tpmjdemo$ java edu.mit.csail.tpmj.tools.TPMVerifySig HelloWorld.txt testkey.key
+
+Parsing command-line arguments ...
+
+
+*** Reading Data *** ...
+
+*** Reading Signature from HelloWorld.txt.sig *** ...
+
+4b 09 3b 05 22 57 b0 e9 93 fc 71 a8 c2 0a 29 2d d1 7d 76 35
+e3 9a c1 04 d4 71 e1 93 00 04 6d f2 c0 b8 48 03 68 c0 d8 8d
+2c 65 da 93 cf 43 c9 2b c4 3b 4c df 70 9d 51 e1 3e a9 16 97
+25 a8 28 01 23 02 22 5e 62 8d 48 f1 4e 4a 3c ea b8 cb d4 e0
+ce 93 4e 1e f2 3c 64 bd c6 44 c5 a1 db f4 9e 24 88 36 d8 33
+84 80 4e ec d8 5c 2b 0b 4e 0a 12 81 62 8a d0 70 94 8a 04 d8
+96 c1 92 4d bd 96 87 9d d5 06 75 e1 eb bd 14 0f c1 a6 72 1b
+58 f7 45 5a 2d f0 91 00 1b 2f 04 69 4e 6f 91 f9 c6 93 c4 75
+e0 fd fc e5 00 ad a0 ea 3d d5 38 74 f8 14 22 61 2b 24 6d 38
+90 41 fa d4 e8 81 d1 8f d1 38 41 50 04 4e 30 f2 55 8a 60 75
+37 23 6e 82 ff e4 28 09 7a 55 cd 1c ab 1a ef 62 2c 54 fb d1
+27 05 a0 88 d9 0b 8c 59 e5 1e 0c 03 76 22 d2 a0 31 65 f3 cd
+46 ec de 0a d0 47 52 63 d5 97 c8 dd 89 7c 7b b4
+
+
+*** Getting the public key from testkey.key ...
+Public key = TPM_STORE_PUBKEY (256 bytes):
+d1 6d 2d 43 c4 19 95 bc ab 65 75 24 f1 56 66 45 5f de 4d 57
+63 eb 05 7e 96 85 a3 7e 08 93 97 25 43 2f 8d 5f 10 60 a4 8e
+97 eb b0 4d 17 81 98 1a 49 9f 62 5b 4d a3 96 c5 9c 2f a1 07
+18 44 b6 57 36 3e c5 eb f1 d1 17 1a 27 82 87 c5 b4 88 5e 05
+24 5d 42 8c 2a d9 e3 52 5c 60 12 99 e7 57 6c d2 4b c1 c3 03
+04 6b 7a eb 52 5e 08 14 01 6f b3 30 e0 14 c5 2a dd 18 a7 9a
+93 c0 49 7d 46 2a ec 02 1a df cd 0b 07 15 59 8b 04 2d 24 b7
+47 18 e1 1d bc 2a c8 ff b4 40 2a ed 5f 13 2b d9 2f 02 0b bb
+45 d8 ac 6e ee f6 0a 25 6c 02 eb 14 93 84 ed 57 bc c1 0f 67
+d7 14 08 d8 9e 3a 66 10 c7 54 3e 58 b1 ee f7 5f 06 be 0e 94
+f6 ad 92 47 41 61 97 f0 94 27 17 8c a9 9d 3e f1 9a 6c 01 c9
+2c cf 31 d4 87 8c c9 ef 18 45 3d bb c4 53 07 90 dc 12 70 80
+2a 28 3a 77 c1 71 87 c5 46 8d 81 06 e4 6c 1a 1d
+
+
+*** Verifying signature by software using public key ...
+Signature OK? true
+</pre>
+
+<h5>Encrypting (Binding) and Decrypting (Unbinding) Data</h5>
+
+<pre>
+lfgs@tpm0:~/tpm/tpmjdemo$ ls -l
+total 20
+-rw-r--r-- 1 lfgs lfgs 559 2007-04-02 16:31 aik.key
+-rw-r--r-- 1 lfgs lfgs  13 2007-04-02 16:35 HelloWorld.txt
+-rw-r--r-- 1 lfgs lfgs 256 2007-04-02 16:36 HelloWorld.txt.sig
+-rw-r--r-- 1 lfgs lfgs 303 2007-04-02 16:27 srk.pubkey
+-rw-r--r-- 1 lfgs lfgs 559 2007-04-02 16:33 testkey.key
+
+
+lfgs@tpm0:~/tpm/tpmjdemo$ java edu.mit.csail.tpmj.tools.TPMBind HelloWorld.txt testkey.key
+
+Parsing command-line arguments ...
+
+
+*** Reading Data *** ...
+
+*** Getting the public key from testkey.key ...
+Public key = TPM_STORE_PUBKEY (256 bytes):
+d1 6d 2d 43 c4 19 95 bc ab 65 75 24 f1 56 66 45 5f de 4d 57
+63 eb 05 7e 96 85 a3 7e 08 93 97 25 43 2f 8d 5f 10 60 a4 8e
+97 eb b0 4d 17 81 98 1a 49 9f 62 5b 4d a3 96 c5 9c 2f a1 07
+18 44 b6 57 36 3e c5 eb f1 d1 17 1a 27 82 87 c5 b4 88 5e 05
+24 5d 42 8c 2a d9 e3 52 5c 60 12 99 e7 57 6c d2 4b c1 c3 03
+04 6b 7a eb 52 5e 08 14 01 6f b3 30 e0 14 c5 2a dd 18 a7 9a
+93 c0 49 7d 46 2a ec 02 1a df cd 0b 07 15 59 8b 04 2d 24 b7
+47 18 e1 1d bc 2a c8 ff b4 40 2a ed 5f 13 2b d9 2f 02 0b bb
+45 d8 ac 6e ee f6 0a 25 6c 02 eb 14 93 84 ed 57 bc c1 0f 67
+d7 14 08 d8 9e 3a 66 10 c7 54 3e 58 b1 ee f7 5f 06 be 0e 94
+f6 ad 92 47 41 61 97 f0 94 27 17 8c a9 9d 3e f1 9a 6c 01 c9
+2c cf 31 d4 87 8c c9 ef 18 45 3d bb c4 53 07 90 dc 12 70 80
+2a 28 3a 77 c1 71 87 c5 46 8d 81 06 e4 6c 1a 1d
+
+
+*** Binding (encrypting) data using public key via software ...
+Encrypted data (256 bytes):
+
+bd 96 db e9 ec 96 88 c5 ac c4 f0 4b c5 14 41 49 56 b6 0f fc
+e2 81 b6 2a 48 d8 d9 5b ac 3f 9c f7 fa a3 c3 df c9 31 20 9f
+78 4e 90 ec b4 bb 8d d8 9c 76 d8 f0 66 ca 61 08 cc 6d af cf
+68 c9 be f9 69 a7 37 a4 96 dd 9f 01 97 bb 21 42 1a 42 20 2d
+58 df cc 90 f8 b8 e9 9a 79 26 73 25 10 4a 01 15 f9 86 95 32
+7d b1 86 52 69 a1 63 41 6a 01 93 c0 ba ca 95 88 0c a5 1e 30
+2e 14 71 2d a8 39 4d 82 79 09 b4 f8 cd 12 e9 fb 9c 4e c2 1c
+6a 46 56 de 9b 6b f8 ca 33 58 bb 24 91 6f f5 a0 8e ac 1d dd
+5d 57 c1 4d 16 d0 71 12 b9 51 0b 06 dc c7 37 f7 de 85 a0 44
+8d 9d 66 73 8a 1e 38 45 38 80 ef be a5 1d eb e2 db a3 60 25
+76 77 81 bd ee f4 f2 5f ab 95 ba 9b f7 83 41 e5 15 a0 27 62
+9f c2 51 0d 61 7f 10 e2 67 73 f2 91 27 f7 0a 4d 5a 90 fc 82
+b5 19 56 f9 ed 59 a0 12 b8 cb 2f 03 78 38 b6 cf
+
+Writing to file HelloWorld.txt.enc
+DONE.
+
+
+lfgs@tpm0:~/tpm/tpmjdemo$ ls -l
+total 24
+-rw-r--r-- 1 lfgs lfgs 559 2007-04-02 16:31 aik.key
+-rw-r--r-- 1 lfgs lfgs  13 2007-04-02 16:35 HelloWorld.txt
+-rw-r--r-- 1 lfgs lfgs 256 2007-04-02 16:38 HelloWorld.txt.enc
+-rw-r--r-- 1 lfgs lfgs 256 2007-04-02 16:36 HelloWorld.txt.sig
+-rw-r--r-- 1 lfgs lfgs 303 2007-04-02 16:27 srk.pubkey
+-rw-r--r-- 1 lfgs lfgs 559 2007-04-02 16:33 testkey.key
+
+
+
+lfgs@tpm0:~/tpm/tpmjdemo$ java edu.mit.csail.tpmj.tools.TPMUnbind HelloWorld.txt.enc 0x105bc9d test
+
+Parsing command-line arguments ...
+
+keyPwd = test, Encoded (Infineon/Vista (SHA1 of UTF16LE without null terminator) = 87f8ed9157125ffc4da9e06a7b8011ad80a53fe1
+
+*** Reading Encrypted Data *** ...
+
+Unbinding using keyHandle 0x105bc9d
+
+Unbound data returned (13 bytes): 48 65 6c 6c 6f 20 57 6f 72 6c 64 21 0a
+
+Writing unbound data to file HelloWorld.txt.enc.plain
+DONE.
+
+
+lfgs@tpm0:~/tpm/tpmjdemo$ cat HelloWorld.txt.enc.plain
+Hello World!
+</pre>
+
+<h4>Flushing/Evicting a Key (or other resource)</h4>
+
+<p>
+To get a list of the handles for keys and other
+resources currently active/loaded in the TPM, run TPMInfo
+(note the owner password is actually not needed for this purpose):
+</p>
+<pre>
+lfgs@tpm0:~/tpm/tpmjdemo$ java edu.mit.csail.tpmj.tools.TPMInfo tpmowner
+ownerPwd = tpmowner, Encoded (Infineon/Vista (SHA1 of UTF16LE without null terminator) = 4ddb6f65c4d692cab6e3df8b7546228855578946
+
+*****
+Getting manufacturer ID ...
+TPM VENDOR ID = 0x4252434d (BRCM)
+----
+
+Getting version via TPM 1.1 way ...
+Returned: edu.mit.csail.tpmj.structs.TPM_STRUCT_VER: 01 01 00 00
+
+----
+
+Getting version via TPM 1.2 way ...
+Returned: edu.mit.csail.tpmj.structs.TPM_CAP_VERSION_INFO: 00 30 01 02 02 12 00 00 00 42 52 43 4d 00 00
+tag: 0x30
+version: edu.mit.csail.tpmj.structs.TPM_VERSION: 01 02 02 12
+specLevel: 0x0
+errataRev: 0x0
+tpmVendorID: 0x4252434d
+vendorSpecificSize: 0x0
+vendorSpecific:
+
+----
+
+Getting TPM Flags (TPM 1.2 only) ...
+Getting TPM Permanent Flags ...
+Returned: TPM_PERMANENT_FLAGS:
+disable: false
+ownership: true
+deactivated: false
+readPubek: false
+disableOwnerClear: false
+allowMaintenance: false
+physicalPresenceLifetimeLock: true
+physicalPresenceHWEnable: false
+physicalPresenceCMDEnable: true
+CEKPUsed: false
+TPMpost: false
+TPMpostLock: false
+FIPS: false
+operator: false
+enableRevokeEK: false
+nvLocked: false
+readSRKPub: true
+tpmEstablished: true
+
+Getting TPM Volatile Flags ...
+Returned: TPM_STCLEAR_FLAGS:
+deactivated: false
+disableForceClear: false
+physicalPresence: false
+physicalPresenceLock: true
+bGlobalLock: false
+
+----
+
+Reading Public Endorsement Key using TPM_OwnerReadInternalPub (TPM 1.2 only) ...
+Public Endorsement Key:
+TPM_PUBKEY:
+algorithmParms = TPM_KEY_PARMS: algorithmID= 0x1, encScheme= 0x3, sigScheme= 0x1
+Parm (12 bytes):
+TPM_RSA_KEY_PARMS: keyLength=2048, numPrimes=2, exponent (0 bytes):
+pubKey: TPM_STORE_PUBKEY (256 bytes):
+e2 12 e1 00 f2 26 ff e7 bd 0e cd 38 2b 84 84 bd d6 2d 10 f7
+3c 19 ce 98 76 2b 71 de 1e cb 27 09 84 31 2c d3 1d a3 6e 3d
+42 0f 93 7f c0 4b ae 6a 1f f2 fd b6 58 43 3e 93 ac 96 3c b0
+4e 1e 7f 56 31 80 c1 95 36 22 3a bb 0b a7 68 6f c3 3a 54 a8
+01 83 1f 6a 54 99 2f 37 21 50 02 0d 5a 81 e9 7d 0c c7 f6 86
+84 26 b9 fe 81 9b 16 80 c8 b2 2f 62 e8 9d 2c dd ee f5 b1 56
+d3 22 2a 96 a3 11 30 1f 42 75 40 5c 4e 49 5b dd 3a 12 d1 ca
+ec 29 c9 8e 3e 96 a0 4c 95 6f b0 f1 db d7 e1 15 a4 92 68 64
+41 04 00 b6 72 bd f7 d0 97 61 e5 a4 c9 90 42 80 b1 34 d4 23
+02 af cc 4a 4d 98 4b c0 bc 1d 38 e3 72 5f e3 6b 35 b7 84 97
+8f c1 d6 0d 0f a4 8b 39 5d 3b 1d 07 1d 38 68 ad 24 91 a5 b1
+6d b9 1b 68 65 0f 8c ec 66 72 0b cb 35 5b 98 4c e7 cd 22 7f
+2e ca 98 88 4a 44 8c fb 15 7c 48 6a 7d 32 9a d1
+
+----
+
+
+Getting number of PCRS:
+numPcrs = 24
+Reading PCRs
+PCR 0: 0000000000000000000000000000000000000000
+PCR 1: 0000000000000000000000000000000000000000
+PCR 2: 0000000000000000000000000000000000000000
+PCR 3: 0000000000000000000000000000000000000000
+PCR 4: 0000000000000000000000000000000000000000
+PCR 5: 0000000000000000000000000000000000000000
+PCR 6: 0000000000000000000000000000000000000000
+PCR 7: 0000000000000000000000000000000000000000
+PCR 8: 0000000000000000000000000000000000000000
+PCR 9: 0000000000000000000000000000000000000000
+PCR 10: 0000000000000000000000000000000000000000
+PCR 11: 0000000000000000000000000000000000000000
+PCR 12: 0000000000000000000000000000000000000000
+PCR 13: 0000000000000000000000000000000000000000
+PCR 14: 0000000000000000000000000000000000000000
+PCR 15: 0000000000000000000000000000000000000000
+PCR 16: 0000000000000000000000000000000000000000
+PCR 17: ffffffffffffffffffffffffffffffffffffffff
+PCR 18: ffffffffffffffffffffffffffffffffffffffff
+PCR 19: ffffffffffffffffffffffffffffffffffffffff
+PCR 20: ffffffffffffffffffffffffffffffffffffffff
+PCR 21: ffffffffffffffffffffffffffffffffffffffff
+PCR 22: ffffffffffffffffffffffffffffffffffffffff
+PCR 23: ffffffffffffffffffffffffffffffffffffffff
+----
+
+Reading Key handles TPM 1.1 style
+TPM_KEY_HANDLES_LIST: 1 loaded handles
+0x105bc9d
+
+----
+
+Reading KEY handles (TPM 1.2 style) ...
+(1 handles):
+0x105bc9d
+
+----
+
+Reading CONTEXT handles (TPM 1.2 style) ...
+(0 handles):
+
+----
+
+Reading AUTH SESSION handles (TPM 1.2 style) ...
+(0 handles):
+
+----
+
+Reading TRANSPORT SESSION handles (TPM 1.2 style) ...
+(0 handles):
+
+----
+
+Reading monotonic counters (TPM 1.2 only) ...
+(0 counters):
+
+----
+</pre>
+
+<p>
+Note the key handle under KEY handles.  To evict or flush this key, use TPMFlush.
+</p>
+
+<pre>
+lfgs@tpm0:~/tpm/tpmjdemo$ java edu.mit.csail.tpmj.tools.TPMFlush k 0x105bc9d
+Flushing handle 0x105bc9d...OK.
+</pre>
+
+Running TPMInfo again shows that the key handle is gone.
+<pre>
+lfgs@tpm0:~/tpm/tpmjdemo$ java edu.mit.csail.tpmj.tools.TPMInfo tpmowner
+... (output text skipped) ...
+
+Reading Key handles TPM 1.1 style
+TPM_KEY_HANDLES_LIST: 0 loaded handles
+
+----
+
+Reading KEY handles (TPM 1.2 style) ...
+(0 handles):
+...
+</pre>
+
+<h4>PCR operations</h4>
+
+<h5>Listing the PCRs quickly</h5>
+<pre>
+lfgs@tpm0:~/tpm/tpmjdemo$ java edu.mit.csail.tpmj.tools.TPMReadPCRs
+PCR [0] 0000000000000000000000000000000000000000
+PCR [1] 0000000000000000000000000000000000000000
+PCR [2] 0000000000000000000000000000000000000000
+PCR [3] 0000000000000000000000000000000000000000
+PCR [4] 0000000000000000000000000000000000000000
+PCR [5] 0000000000000000000000000000000000000000
+PCR [6] 0000000000000000000000000000000000000000
+PCR [7] 0000000000000000000000000000000000000000
+PCR [8] 0000000000000000000000000000000000000000
+PCR [9] 0000000000000000000000000000000000000000
+PCR [10] 0000000000000000000000000000000000000000
+PCR [11] 0000000000000000000000000000000000000000
+PCR [12] 0000000000000000000000000000000000000000
+PCR [13] 0000000000000000000000000000000000000000
+PCR [14] 0000000000000000000000000000000000000000
+PCR [15] 0000000000000000000000000000000000000000
+PCR [16] 0000000000000000000000000000000000000000
+PCR [17] FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+PCR [18] FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+PCR [19] FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+PCR [20] FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+PCR [21] FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+PCR [22] FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+PCR [23] FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+</pre>
+
+<h5>Extending a PCR</h5>
+
+<p>
+<b>Warning!</b>
+These may interfere with other applications that depend on the PCR configurations.
+At present, the Intel Mac does not have such applications, but other OS's, particularly Vista
+may use the PCRs.  If a problem happens, reboot your machine.
+</p>
+
+<pre>
+lfgs@tpm0:~/tpm/tpmjdemo$ java edu.mit.csail.tpmj.tools.TPMExtend 8 0x1234567890123456789012345678901234567890
+
+Parsing command-line arguments ...
+
+data = 0x1234567890123456789012345678901234567890, Encoded (Hex) = 1234567890123456789012345678901234567890
+PCR 8:
+Old value: 0000000000000000000000000000000000000000
+Extending by 1234567890123456789012345678901234567890...
+New value: d70c2b7c26f239e78542ad24bf4c3e64337a6bea
+
+
+lfgs@tpm0:~/tpm/tpmjdemo$ java edu.mit.csail.tpmj.tools.TPMReadPCRs
+PCR [0] 0000000000000000000000000000000000000000
+PCR [1] 0000000000000000000000000000000000000000
+PCR [2] 0000000000000000000000000000000000000000
+PCR [3] 0000000000000000000000000000000000000000
+PCR [4] 0000000000000000000000000000000000000000
+PCR [5] 0000000000000000000000000000000000000000
+PCR [6] 0000000000000000000000000000000000000000
+PCR [7] 0000000000000000000000000000000000000000
+PCR [8] D70C2B7C26F239E78542AD24BF4C3E64337A6BEA
+PCR [9] 0000000000000000000000000000000000000000
+PCR [10] 0000000000000000000000000000000000000000
+PCR [11] 0000000000000000000000000000000000000000
+PCR [12] 0000000000000000000000000000000000000000
+PCR [13] 0000000000000000000000000000000000000000
+PCR [14] 0000000000000000000000000000000000000000
+PCR [15] 0000000000000000000000000000000000000000
+PCR [16] 0000000000000000000000000000000000000000
+PCR [17] FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+PCR [18] FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+PCR [19] FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+PCR [20] FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+PCR [21] FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+PCR [22] FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+PCR [23] FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+</pre>
+
+<h5>Quoting the PCRs and Verifying the Quote</h5>
+
+First, you have to load an , and then use the handle that you get.
+<pre>
+lfgs@tpm0:~/tpm/tpmjdemo$ java edu.mit.csail.tpmj.tools.TPMLoadKey aik.key SRK ""
+
+Parsing command-line arguments ...
+
+Using SRK as parent.
+parentPwd = , Encoded (All zeros) = 0000000000000000000000000000000000000000
+
+Read aik.key ...
+
+Loading the key into the TPM ...
+keyHandle = 0x105bca4
+</pre>
+
+<pre>
+lfgs@tpm0:~/tpm/tpmjdemo$ java edu.mit.csail.tpmj.tools.TPMQuote QuickStartQuoteDemo 0x105bca4 test
+
+Parsing command-line arguments ...
+
+keyPwd = test, Encoded (Infineon/Vista (SHA1 of UTF16LE without null terminator) = 87f8ed9157125ffc4da9e06a7b8011ad80a53fe1
+nonce (external data) = QuickStartQuoteDemo, Encoded (Infineon/Vista (SHA1 of UTF16LE without null terminator) = 45b3a9c706bd08d3764a04c511c4d81028d11479
+
+*** Getting Quote *** ...
+DONE.
+Output=TPM_QuoteOutput (data params only):
+PCRData =
+TPM_PCR_COMPOSITE:
+select = TPM_PCR_SELECTION for 24 PCRs: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 (0xffffff)
+PcrValues (numValues=24, valueSize=480):
+0000000000000000000000000000000000000000
+0000000000000000000000000000000000000000
+0000000000000000000000000000000000000000
+0000000000000000000000000000000000000000
+0000000000000000000000000000000000000000
+0000000000000000000000000000000000000000
+0000000000000000000000000000000000000000
+0000000000000000000000000000000000000000
+d70c2b7c26f239e78542ad24bf4c3e64337a6bea
+0000000000000000000000000000000000000000
+0000000000000000000000000000000000000000
+0000000000000000000000000000000000000000
+0000000000000000000000000000000000000000
+0000000000000000000000000000000000000000
+0000000000000000000000000000000000000000
+0000000000000000000000000000000000000000
+0000000000000000000000000000000000000000
+ffffffffffffffffffffffffffffffffffffffff
+ffffffffffffffffffffffffffffffffffffffff
+ffffffffffffffffffffffffffffffffffffffff
+ffffffffffffffffffffffffffffffffffffffff
+ffffffffffffffffffffffffffffffffffffffff
+ffffffffffffffffffffffffffffffffffffffff
+ffffffffffffffffffffffffffffffffffffffff
+
+Signature (256 bytes): a1768d31405519dc468e1913477766c384be8169c59491b083a38aa2da1716bbc38999eb5d14098ae43c08d91a04941708a2b193603a7da374f72c37fa2527dab1db50be0bd6f8fcdc884191487f6afea1af982251be34c6de4d2e1b35c19cd46cf7914840c1c5e06e919117d9a51eab797b99aea542809b1c86c8e8b44efa2836b5f26247b002e25557ec982e33e32bd6610cd4e7a394acc3c14ed12718acadc840d805229652b9f51324d920a923af6eac8966815360a66cbbe61de585c709c40fc42ea1ec89802b63b1ba27b5a9fe68e326ae7c549ef85c70fa6c7d5ccac61534518a8a6affbf9f02ac3a0da259baa15522c6b0666422998e2c4aa3d96c4c
+
+Writing signature to file QuickStartQuoteDemo.quot
+DONE.
+
+Writing signature to file QuickStartQuoteDemo.sig
+DONE.
+
+lfgs@tpm0:~/tpm/tpmjdemo$ ls -l
+total 36
+-rw-r--r-- 1 lfgs lfgs 559 2007-04-02 16:31 aik.key
+-rw-r--r-- 1 lfgs lfgs  13 2007-04-02 16:35 HelloWorld.txt
+-rw-r--r-- 1 lfgs lfgs 256 2007-04-02 16:38 HelloWorld.txt.enc
+-rw-r--r-- 1 lfgs lfgs  13 2007-04-02 16:39 HelloWorld.txt.enc.plain
+-rw-r--r-- 1 lfgs lfgs 256 2007-04-02 16:36 HelloWorld.txt.sig
+-rw-r--r-- 1 lfgs lfgs 489 2007-04-02 16:44 QuickStartQuoteDemo.quot
+-rw-r--r-- 1 lfgs lfgs 256 2007-04-02 16:44 QuickStartQuoteDemo.sig
+-rw-r--r-- 1 lfgs lfgs 303 2007-04-02 16:27 srk.pubkey
+-rw-r--r-- 1 lfgs lfgs 559 2007-04-02 16:33 testkey.key
+
+
+lfgs@tpm0:~/tpm/tpmjdemo$ java edu.mit.csail.tpmj.tools.TPMVerifyQuote QuickStartQuoteDemo aik.key
+
+Parsing command-line arguments ...
+
+nonce (external data) = QuickStartQuoteDemo, Encoded (Infineon/Vista (SHA1 of UTF16LE without null terminator) = 45b3a9c706bd08d3764a04c511c4d81028d11479
+
+*** Reading Quote Data from QuickStartQuoteDemo.quot *** ...
+TPM_PCR_COMPOSITE:
+select = TPM_PCR_SELECTION for 24 PCRs: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 (0xffffff)
+PcrValues (numValues=24, valueSize=480):
+0000000000000000000000000000000000000000
+0000000000000000000000000000000000000000
+0000000000000000000000000000000000000000
+0000000000000000000000000000000000000000
+0000000000000000000000000000000000000000
+0000000000000000000000000000000000000000
+0000000000000000000000000000000000000000
+0000000000000000000000000000000000000000
+d70c2b7c26f239e78542ad24bf4c3e64337a6bea
+0000000000000000000000000000000000000000
+0000000000000000000000000000000000000000
+0000000000000000000000000000000000000000
+0000000000000000000000000000000000000000
+0000000000000000000000000000000000000000
+0000000000000000000000000000000000000000
+0000000000000000000000000000000000000000
+0000000000000000000000000000000000000000
+ffffffffffffffffffffffffffffffffffffffff
+ffffffffffffffffffffffffffffffffffffffff
+ffffffffffffffffffffffffffffffffffffffff
+ffffffffffffffffffffffffffffffffffffffff
+ffffffffffffffffffffffffffffffffffffffff
+ffffffffffffffffffffffffffffffffffffffff
+ffffffffffffffffffffffffffffffffffffffff
+
+
+*** Reading Signature from QuickStartQuoteDemo.sig *** ...
+
+a1 76 8d 31 40 55 19 dc 46 8e 19 13 47 77 66 c3 84 be 81 69
+c5 94 91 b0 83 a3 8a a2 da 17 16 bb c3 89 99 eb 5d 14 09 8a
+e4 3c 08 d9 1a 04 94 17 08 a2 b1 93 60 3a 7d a3 74 f7 2c 37
+fa 25 27 da b1 db 50 be 0b d6 f8 fc dc 88 41 91 48 7f 6a fe
+a1 af 98 22 51 be 34 c6 de 4d 2e 1b 35 c1 9c d4 6c f7 91 48
+40 c1 c5 e0 6e 91 91 17 d9 a5 1e ab 79 7b 99 ae a5 42 80 9b
+1c 86 c8 e8 b4 4e fa 28 36 b5 f2 62 47 b0 02 e2 55 57 ec 98
+2e 33 e3 2b d6 61 0c d4 e7 a3 94 ac c3 c1 4e d1 27 18 ac ad
+c8 40 d8 05 22 96 52 b9 f5 13 24 d9 20 a9 23 af 6e ac 89 66
+81 53 60 a6 6c bb e6 1d e5 85 c7 09 c4 0f c4 2e a1 ec 89 80
+2b 63 b1 ba 27 b5 a9 fe 68 e3 26 ae 7c 54 9e f8 5c 70 fa 6c
+7d 5c ca c6 15 34 51 8a 8a 6a ff bf 9f 02 ac 3a 0d a2 59 ba
+a1 55 22 c6 b0 66 64 22 99 8e 2c 4a a3 d9 6c 4c
+
+
+*** Getting the public key from aik.key ...
+Public key bytes (256 bytes) =
+
+ab 00 a8 bc 6f 7b 5b d6 8b 56 f2 aa 0a 00 d7 33 0e 50 fa 15
+83 5c 8e 69 06 e5 f9 65 14 18 3b 06 b3 c7 3a b6 9c 53 22 5c
+d4 4a b0 24 fd 4c d6 62 43 d0 b3 3f 76 9a a4 c9 8c a1 6a f6
+80 16 d3 c9 5e ad 70 97 e7 b3 77 10 a6 38 df 81 26 84 0b 9d
+00 70 e7 13 78 eb 70 6f cf 76 64 4e 35 de 71 c7 cb a7 bd e0
+8e 7a 39 5b 7d 6e 7d 62 b5 b0 85 d1 6f 7b 15 b2 e6 f1 8d 95
+d6 71 ee db fe 87 4a 72 d9 ad 4a 70 c2 b1 9d 4f 55 cb 25 50
+c4 5b ea 14 d3 91 d1 46 37 f6 86 d3 37 bb 1c 53 f4 61 e5 6f
+89 f7 ef 6d 88 e7 21 3f c3 73 7d a9 92 89 54 b3 5f 8f 04 fc
+cf b9 74 c7 8a 18 5d 5b fd 06 4d f6 7d 2f 5c 36 37 77 c5 67
+7f 9d 43 23 70 da 0d 36 fd be a7 1f 9d 5d d5 78 48 9b a6 07
+e4 7e 3b 33 84 84 44 9c a3 72 dc 77 41 d5 79 6b 93 96 8d 2f
+d8 06 e9 34 85 f9 42 0c d7 ad f8 21 4f c3 f1 85
+
+
+*** Verifying signature on quote by software using public key ...
+Signature OK? true
+</pre>
+
+<h4>Sealing and Unsealing data</h4>
+
+<h5>Sealing and unsealing Data without dependence on PCRs</h5>
+
+<p>
+Sealing data without dependence on PCRs (no PCRs given after
+the dataPwd on the command line) 
+allows you to encrypt
+data that can be decrypted (unsealed) only on the same TPM,
+and with knowledge of both the storage key password,
+and the data password.
+</p>
+<pre>
+lfgs@tpm0:~/tpm/tpmjdemo$ ls -l
+total 36
+-rw-r--r-- 1 lfgs lfgs 559 2007-04-02 16:31 aik.key
+-rw-r--r-- 1 lfgs lfgs  13 2007-04-02 16:35 HelloWorld.txt
+-rw-r--r-- 1 lfgs lfgs 256 2007-04-02 16:38 HelloWorld.txt.enc
+-rw-r--r-- 1 lfgs lfgs  13 2007-04-02 16:39 HelloWorld.txt.enc.plain
+-rw-r--r-- 1 lfgs lfgs 256 2007-04-02 16:36 HelloWorld.txt.sig
+-rw-r--r-- 1 lfgs lfgs 489 2007-04-02 16:44 QuickStartQuoteDemo.quot
+-rw-r--r-- 1 lfgs lfgs 256 2007-04-02 16:44 QuickStartQuoteDemo.sig
+-rw-r--r-- 1 lfgs lfgs 303 2007-04-02 16:27 srk.pubkey
+-rw-r--r-- 1 lfgs lfgs 559 2007-04-02 16:33 testkey.key
+lfgs@tpm0:~/tpm/tpmjdemo$ java edu.mit.csail.tpmj.tools.TPMSeal HelloWorld.txt SRK "" foo
+
+Parsing command-line arguments ...
+
+Using SRK to seal.
+keyPwd = , Encoded (All zeros) = 0000000000000000000000000000000000000000
+dataPwd = foo, Encoded (Infineon/Vista (SHA1 of UTF16LE without null terminator) = b91c0b9b01341768775b9133b367c86c196061c8
+
+*** Reading Data *** ...
+48 65 6c 6c 6f 20 57 6f 72 6c 64 21 0a
+
+*** Reading PCR configuation to seal data to *** ...
+PCRs will NOT be used as a condition for unsealing
+
+*** Sealing Data *** ...
+Encrypted data structure =
+TPM_STORED_DATA: ver: edu.mit.csail.tpmj.structs.TPM_STRUCT_VER: 01 01 00 00
+sealInfo: null
+encData (256 bytes):
+6c ca 16 ca 16 b4 7a 24 a7 79 76 12 8c fc a9 21 63 cc 79 fc
+ac ea 12 13 36 21 4d d5 b8 03 bc 8f ee 09 c5 da b9 a0 e0 65
+30 11 cd 7b bb 3c 75 e1 93 b9 6c 08 88 4b 5e 59 6b dc bc 1e
+33 33 2e d8 81 e3 a2 27 f2 7a 7a 0a 47 6b 96 ca eb 6e 3f f0
+ab c0 91 29 00 43 ac d1 f3 9c 95 5f ee 6b 6b 77 31 b7 e0 df
+37 63 6d c2 fe 6a 60 d8 1c 5e 11 cf 6c b0 fd 7b 36 ef 60 88
+b7 ef 8f a1 6d 7a a8 f5 f3 25 df 55 90 7d 1d 95 44 c8 77 b8
+1b a7 0f 1c 1d b9 fe 3c 9a 4b cb fa d7 92 12 f7 dc 6f 09 fa
+80 be 6f 68 6b 0a 9c ca b7 a4 e1 9c aa 99 5c 12 46 1c ba e4
+26 b1 13 33 c8 5a 73 7b f8 b3 e9 a7 18 10 d9 06 5e 86 94 5e
+c8 a9 e4 4e 29 81 53 08 77 67 c4 a9 d0 69 b1 ed 37 e5 19 29
+3a 03 b4 3c 90 fa 3e 14 23 ba 1f 9e 86 33 26 12 f8 77 47 65
+dc 49 fc e0 f6 72 38 51 de be bf 8f 6f 3e 6b 66
+
+Writing to file HelloWorld.txt.sealed
+DONE.
+
+*** Testing Unseal *** ...
+48 65 6c 6c 6f 20 57 6f 72 6c 64 21 0a
+
+
+
+lfgs@tpm0:~/tpm/tpmjdemo$ ls -l
+total 40
+-rw-r--r-- 1 lfgs lfgs 559 2007-04-02 16:31 aik.key
+-rw-r--r-- 1 lfgs lfgs  13 2007-04-02 16:35 HelloWorld.txt
+-rw-r--r-- 1 lfgs lfgs 256 2007-04-02 16:38 HelloWorld.txt.enc
+-rw-r--r-- 1 lfgs lfgs  13 2007-04-02 16:39 HelloWorld.txt.enc.plain
+-rw-r--r-- 1 lfgs lfgs 268 2007-04-02 16:46 HelloWorld.txt.sealed
+-rw-r--r-- 1 lfgs lfgs 256 2007-04-02 16:36 HelloWorld.txt.sig
+-rw-r--r-- 1 lfgs lfgs 489 2007-04-02 16:44 QuickStartQuoteDemo.quot
+-rw-r--r-- 1 lfgs lfgs 256 2007-04-02 16:44 QuickStartQuoteDemo.sig
+-rw-r--r-- 1 lfgs lfgs 303 2007-04-02 16:27 srk.pubkey
+-rw-r--r-- 1 lfgs lfgs 559 2007-04-02 16:33 testkey.key
+
+
+lfgs@tpm0:~/tpm/tpmjdemo$ java edu.mit.csail.tpmj.tools.TPMUnseal HelloWorld.txt.sealed SRK "" foo
+
+Parsing command-line arguments ...
+
+Using SRK to seal.
+keyPwd = , Encoded (All zeros) = 0000000000000000000000000000000000000000
+dataPwd = foo, Encoded (Infineon/Vista (SHA1 of UTF16LE without null terminator) = b91c0b9b01341768775b9133b367c86c196061c8
+
+*** Reading SealedData from file HelloWorld.txt.sealed *** ...
+Encrypted data structure =
+TPM_STORED_DATA: ver: edu.mit.csail.tpmj.structs.TPM_STRUCT_VER: 01 01 00 00
+sealInfo: null
+encData (256 bytes):
+6c ca 16 ca 16 b4 7a 24 a7 79 76 12 8c fc a9 21 63 cc 79 fc
+ac ea 12 13 36 21 4d d5 b8 03 bc 8f ee 09 c5 da b9 a0 e0 65
+30 11 cd 7b bb 3c 75 e1 93 b9 6c 08 88 4b 5e 59 6b dc bc 1e
+33 33 2e d8 81 e3 a2 27 f2 7a 7a 0a 47 6b 96 ca eb 6e 3f f0
+ab c0 91 29 00 43 ac d1 f3 9c 95 5f ee 6b 6b 77 31 b7 e0 df
+37 63 6d c2 fe 6a 60 d8 1c 5e 11 cf 6c b0 fd 7b 36 ef 60 88
+b7 ef 8f a1 6d 7a a8 f5 f3 25 df 55 90 7d 1d 95 44 c8 77 b8
+1b a7 0f 1c 1d b9 fe 3c 9a 4b cb fa d7 92 12 f7 dc 6f 09 fa
+80 be 6f 68 6b 0a 9c ca b7 a4 e1 9c aa 99 5c 12 46 1c ba e4
+26 b1 13 33 c8 5a 73 7b f8 b3 e9 a7 18 10 d9 06 5e 86 94 5e
+c8 a9 e4 4e 29 81 53 08 77 67 c4 a9 d0 69 b1 ed 37 e5 19 29
+3a 03 b4 3c 90 fa 3e 14 23 ba 1f 9e 86 33 26 12 f8 77 47 65
+dc 49 fc e0 f6 72 38 51 de be bf 8f 6f 3e 6b 66
+
+
+*** Unsealing *** ...
+48 65 6c 6c 6f 20 57 6f 72 6c 64 21 0a
+
+*** Writing to file HelloWorld.txt.unsealed *** ...
+DONE.
+
+
+lfgs@tpm0:~/tpm/tpmjdemo$ ls -l
+total 44
+-rw-r--r-- 1 lfgs lfgs 559 2007-04-02 16:31 aik.key
+-rw-r--r-- 1 lfgs lfgs  13 2007-04-02 16:35 HelloWorld.txt
+-rw-r--r-- 1 lfgs lfgs 256 2007-04-02 16:38 HelloWorld.txt.enc
+-rw-r--r-- 1 lfgs lfgs  13 2007-04-02 16:39 HelloWorld.txt.enc.plain
+-rw-r--r-- 1 lfgs lfgs 268 2007-04-02 16:46 HelloWorld.txt.sealed
+-rw-r--r-- 1 lfgs lfgs 256 2007-04-02 16:36 HelloWorld.txt.sig
+-rw-r--r-- 1 lfgs lfgs  13 2007-04-02 16:47 HelloWorld.txt.unsealed
+-rw-r--r-- 1 lfgs lfgs 489 2007-04-02 16:44 QuickStartQuoteDemo.quot
+-rw-r--r-- 1 lfgs lfgs 256 2007-04-02 16:44 QuickStartQuoteDemo.sig
+-rw-r--r-- 1 lfgs lfgs 303 2007-04-02 16:27 srk.pubkey
+-rw-r--r-- 1 lfgs lfgs 559 2007-04-02 16:33 testkey.key
+lfgs@tpm0:~/tpm/tpmjdemo$ cat HelloWorld.txt.unsealed
+Hello World!
+</pre>
+
+<h5>Sealing and Unsealing data to current PCR configuration</h5>
+
+<pre>
+lfgs@tpm0:~/tpm/tpmjdemo$ java edu.mit.csail.tpmj.tools.TPMSeal HelloWorld.txt SRK "" foo 7 8
+
+Parsing command-line arguments ...
+
+Using SRK to seal.
+keyPwd = , Encoded (All zeros) = 0000000000000000000000000000000000000000
+dataPwd = foo, Encoded (Infineon/Vista (SHA1 of UTF16LE without null terminator) = b91c0b9b01341768775b9133b367c86c196061c8
+
+*** Reading Data *** ...
+48 65 6c 6c 6f 20 57 6f 72 6c 64 21 0a
+
+*** Reading PCR configuation to seal data to *** ...
+PCRs: 7 8
+TPM_PCR_COMPOSITE:
+select = TPM_PCR_SELECTION for 24 PCRs: 7 8 (0x800100)
+PcrValues (numValues=2, valueSize=40):
+0000000000000000000000000000000000000000
+d70c2b7c26f239e78542ad24bf4c3e64337a6bea
+
+digest: 22511bf7c5fb74e07777520c166666c1c12d473d
+
+*** Sealing Data *** ...
+Encrypted data structure =
+TPM_STORED_DATA: ver: edu.mit.csail.tpmj.structs.TPM_STRUCT_VER: 01 01 00 00
+sealInfo: TPM_PCR_INFO:
+pcrSelection = TPM_PCR_SELECTION for 24 PCRs: 7 8 (0x800100)
+digestAtRelease =  22511bf7c5fb74e07777520c166666c1c12d473d
+digestAtCreation =  22511bf7c5fb74e07777520c166666c1c12d473d
+
+encData (256 bytes):
+83 0b 95 00 fe 40 91 a0 69 25 01 c1 83 20 e5 75 6c bb 4e 0b
+91 f4 68 01 92 03 eb 1b 65 f9 f8 6b e4 36 d9 3a c8 44 45 90
+05 71 0a 8c 65 de 0c 7c a2 0f 1d 19 e3 d1 d5 9a ab 1f f2 cf
+49 b7 13 cc d4 3d eb c5 fc 8a a3 16 26 50 ba 9b c6 e5 81 6c
+54 e4 e7 2b f7 f3 5b 15 4c ae e7 dc da 3f 2e eb cf 5e aa b5
+b5 03 17 70 52 2b 4a c4 cb e6 89 25 36 33 aa 90 2c 3a b1 9b
+3e 71 1b e5 1c cb e0 6e 74 fc ba ff f3 94 82 dd 1a 19 cf 37
+42 5e 85 86 a9 e3 14 35 b7 04 ef ff bb c6 b6 6b 71 b1 b2 04
+aa 25 10 0c 4f dd bd ec ab 04 e8 fa 9b ef 93 87 0c a7 28 f8
+7f b7 e4 72 03 29 a6 58 56 fd be 87 93 0e ce 86 dc d2 e5 60
+72 ac 0e a1 1f 48 61 7b a8 11 6c c4 53 f9 1f 48 ba e5 b2 0b
+0c f7 f9 1c ac 3b 78 43 bd 80 a2 d4 84 63 2a b7 40 ae c6 e7
+d1 d7 20 4b eb 72 e5 5e a2 75 af 7f 2c 83 67 ce
+
+Writing to file HelloWorld.txt.sealed
+DONE.
+
+*** Testing Unseal *** ...
+48 65 6c 6c 6f 20 57 6f 72 6c 64 21 0a
+
+
+lfgs@tpm0:~/tpm/tpmjdemo$ java edu.mit.csail.tpmj.tools.TPMUnseal HelloWorld.txt.sealed SRK "" foo
+
+Parsing command-line arguments ...
+
+Using SRK to seal.
+keyPwd = , Encoded (All zeros) = 0000000000000000000000000000000000000000
+dataPwd = foo, Encoded (Infineon/Vista (SHA1 of UTF16LE without null terminator) = b91c0b9b01341768775b9133b367c86c196061c8
+
+*** Reading SealedData from file HelloWorld.txt.sealed *** ...
+Encrypted data structure =
+TPM_STORED_DATA: ver: edu.mit.csail.tpmj.structs.TPM_STRUCT_VER: 01 01 00 00
+sealInfo: TPM_PCR_INFO:
+pcrSelection = TPM_PCR_SELECTION for 24 PCRs: 7 8 (0x800100)
+digestAtRelease =  22511bf7c5fb74e07777520c166666c1c12d473d
+digestAtCreation =  22511bf7c5fb74e07777520c166666c1c12d473d
+
+encData (256 bytes):
+83 0b 95 00 fe 40 91 a0 69 25 01 c1 83 20 e5 75 6c bb 4e 0b
+91 f4 68 01 92 03 eb 1b 65 f9 f8 6b e4 36 d9 3a c8 44 45 90
+05 71 0a 8c 65 de 0c 7c a2 0f 1d 19 e3 d1 d5 9a ab 1f f2 cf
+49 b7 13 cc d4 3d eb c5 fc 8a a3 16 26 50 ba 9b c6 e5 81 6c
+54 e4 e7 2b f7 f3 5b 15 4c ae e7 dc da 3f 2e eb cf 5e aa b5
+b5 03 17 70 52 2b 4a c4 cb e6 89 25 36 33 aa 90 2c 3a b1 9b
+3e 71 1b e5 1c cb e0 6e 74 fc ba ff f3 94 82 dd 1a 19 cf 37
+42 5e 85 86 a9 e3 14 35 b7 04 ef ff bb c6 b6 6b 71 b1 b2 04
+aa 25 10 0c 4f dd bd ec ab 04 e8 fa 9b ef 93 87 0c a7 28 f8
+7f b7 e4 72 03 29 a6 58 56 fd be 87 93 0e ce 86 dc d2 e5 60
+72 ac 0e a1 1f 48 61 7b a8 11 6c c4 53 f9 1f 48 ba e5 b2 0b
+0c f7 f9 1c ac 3b 78 43 bd 80 a2 d4 84 63 2a b7 40 ae c6 e7
+d1 d7 20 4b eb 72 e5 5e a2 75 af 7f 2c 83 67 ce
+
+
+*** Unsealing *** ...
+48 65 6c 6c 6f 20 57 6f 72 6c 64 21 0a
+
+*** Writing to file HelloWorld.txt.unsealed *** ...
+DONE.
+</pre>
+
+<h4>Monotonic counter operations</h4>
+
+<h5>Creation</h5>
+<pre>
+lfgs@tpm0:~/tpm/tpmjdemo$ java edu.mit.csail.tpmj.tools.TPMCreateCounter tpmowner CNTR foocount
+
+Parsing command-line arguments ...
+
+ownerPwd = tpmowner, Encoded (Infineon/Vista (SHA1 of UTF16LE without null terminator) = 4ddb6f65c4d692cab6e3df8b7546228855578946
+counterPwd = foocount, Encoded (Infineon/Vista (SHA1 of UTF16LE without null terminator) = 33353475e77df61d66a602d6dc57e90e1bbfa720
+Creating monotonic counter for label CNTR(0x434e5452) ...
+Created Counter ID 0xa05bcba
+TPM_COUNTER_VALUE: label: 0x434e5452 (CNTR), counter value: 0x1
+lfgs@tpm0:~/tpm/tpmjdemo$
+</pre>
+
+<h5>Reading</h5>
+<pre>
+lfgs@tpm0:~/tpm/tpmjdemo$ java edu.mit.csail.tpmj.tools.TPMReadCounter 0xa05bcba
+
+Parsing command-line arguments ...
+
+counterPwd = null, Encoded (NULL [no authorization]) = null
+Using NULL (all zeroes) as counterAuth
+Reading counter 0xa05bcba
+Output: TPM_COUNTER_VALUE: label: 0x434e5452 (CNTR), counter value: 0x1
+</pre>
+
+<h5>Incrementing</h5>
+<pre>
+lfgs@tpm0:~/tpm/tpmjdemo$ java edu.mit.csail.tpmj.tools.TPMIncCounter 0xa05bcba foocount
+
+Parsing command-line arguments ...
+
+counterPwd = foocount, Encoded (Infineon/Vista (SHA1 of UTF16LE without null terminator) = 33353475e77df61d66a602d6dc57e90e1bbfa720
+Incrementing counter 0xa05bcba
+Output: TPM_COUNTER_VALUE: label: 0x434e5452 (CNTR), counter value: 0x2
+
+NOTE: You will not be able to increment
+any other counters aside from 0xa05bcba
+until you reboot.
+</pre>
+
+<h5>Count-stamp a file (uses monotonic counter and transport sessions)</h5>
+
+<pre>
+lfgs@tpm0:~/tpm/tpmjdemo$ java edu.mit.csail.tpmj.tools.TPMCreateCountStamp HelloWorld.txt I 0xa05bcba foocount 0x105bca4 test
+
+Parsing command-line arguments ...
+
+counterPwd = foocount, Encoded (Infineon/Vista (SHA1 of UTF16LE without null terminator) = 33353475e77df61d66a602d6dc57e90e1bbfa720
+keyPwd = test, Encoded (Infineon/Vista (SHA1 of UTF16LE without null terminator) = 87f8ed9157125ffc4da9e06a7b8011ad80a53fe1
+
+*** Reading Data *** ...
+Hash of data (to be used as nonce): a0b65939670bc2c010f4d5d6a0b3e4e4590fb92b
+Writing CountStamp to file HelloWorld.txt.cntstmp
+DONE.
+
+
+Reading CountStamp to verify it ...
+CountStamp: TPMCountStamp:
+ID = [0xa05bcba, CNTR]
+count = 3
+opType = 0x221 (TPM_ORD_IncrementCounter)
+error code = 0x0
+nonce = a0b65939670bc2c010f4d5d6a0b3e4e4590fb92b
+
+*** Verifying signature by software using public key ...
+Signature OK? true
+
+
+lfgs@tpm0:~/tpm/tpmjdemo$ ls -l
+total 48
+-rw-r--r-- 1 lfgs lfgs  559 2007-04-02 16:31 aik.key
+-rw-r--r-- 1 lfgs lfgs   13 2007-04-02 16:35 HelloWorld.txt
+-rw-r--r-- 1 lfgs lfgs 2390 2007-04-02 17:19 HelloWorld.txt.cntstmp
+-rw-r--r-- 1 lfgs lfgs  256 2007-04-02 16:38 HelloWorld.txt.enc
+-rw-r--r-- 1 lfgs lfgs   13 2007-04-02 16:39 HelloWorld.txt.enc.plain
+-rw-r--r-- 1 lfgs lfgs  313 2007-04-02 17:01 HelloWorld.txt.sealed
+-rw-r--r-- 1 lfgs lfgs  256 2007-04-02 16:36 HelloWorld.txt.sig
+-rw-r--r-- 1 lfgs lfgs   13 2007-04-02 16:49 HelloWorld.txt.unsealed
+-rw-r--r-- 1 lfgs lfgs  489 2007-04-02 16:44 QuickStartQuoteDemo.quot
+-rw-r--r-- 1 lfgs lfgs  256 2007-04-02 16:44 QuickStartQuoteDemo.sig
+-rw-r--r-- 1 lfgs lfgs  303 2007-04-02 16:27 srk.pubkey
+-rw-r--r-- 1 lfgs lfgs  559 2007-04-02 16:33 testkey.key
+</pre>
+
+<h5>Verify the count-stamp</h5>
+<pre>
+lfgs@tpm0:~/tpm/tpmjdemo$ java edu.mit.csail.tpmj.tools.TPMVerifyCountStamp HelloWorld.txt aik.key
+
+Parsing command-line arguments ...
+
+
+*** Reading Data *** ...
+
+*** Getting the public key from aik.key ...
+Public key = TPM_STORE_PUBKEY (256 bytes):
+ab 00 a8 bc 6f 7b 5b d6 8b 56 f2 aa 0a 00 d7 33 0e 50 fa 15
+83 5c 8e 69 06 e5 f9 65 14 18 3b 06 b3 c7 3a b6 9c 53 22 5c
+d4 4a b0 24 fd 4c d6 62 43 d0 b3 3f 76 9a a4 c9 8c a1 6a f6
+80 16 d3 c9 5e ad 70 97 e7 b3 77 10 a6 38 df 81 26 84 0b 9d
+00 70 e7 13 78 eb 70 6f cf 76 64 4e 35 de 71 c7 cb a7 bd e0
+8e 7a 39 5b 7d 6e 7d 62 b5 b0 85 d1 6f 7b 15 b2 e6 f1 8d 95
+d6 71 ee db fe 87 4a 72 d9 ad 4a 70 c2 b1 9d 4f 55 cb 25 50
+c4 5b ea 14 d3 91 d1 46 37 f6 86 d3 37 bb 1c 53 f4 61 e5 6f
+89 f7 ef 6d 88 e7 21 3f c3 73 7d a9 92 89 54 b3 5f 8f 04 fc
+cf b9 74 c7 8a 18 5d 5b fd 06 4d f6 7d 2f 5c 36 37 77 c5 67
+7f 9d 43 23 70 da 0d 36 fd be a7 1f 9d 5d d5 78 48 9b a6 07
+e4 7e 3b 33 84 84 44 9c a3 72 dc 77 41 d5 79 6b 93 96 8d 2f
+d8 06 e9 34 85 f9 42 0c d7 ad f8 21 4f c3 f1 85
+
+Reading CountStamp from file HelloWorld.txt.cntstmp ...
+CountStamp: TPMCountStamp:
+ID = [0xa05bcba, CNTR]
+count = 3
+opType = 0x221 (TPM_ORD_IncrementCounter)
+error code = 0x0
+nonce = a0b65939670bc2c010f4d5d6a0b3e4e4590fb92b
+
+*** Verifying signature by software using public key ...
+Signature OK? true
+</pre>
+
+
+<h3><a name="vistaexample">Vista (HP dc7600 with Broadcom TPM 1.2)</a></h3>
+
+<p>
+The following tests were done on an HP DC7600.
+</p>
+
+<p>
+First, make sure the TPM enabled in the BIOS.
+</p>
+
+<p>
+Then, run the command prompt as Administrator.  (Right-click on Command-Prompt,
+and choose Run as Administrator.)
+</p>
+
+<p>Run <tt>tpm.msc</tt> just to see if the TPM is visible to Vista.
+</p>
+
+<p>On the left side, click Command Management.
+Enable the commands that you want TPM/J to be able to use.
+Please, note, though that enabling commands that are blocked
+may interfere with Vista's operation.
+Do this only if you know what you are doing.
+</p>
+
+<h4>Setting the path</h4>
+
+<p>
+The following example assumes you the TPM/J files are in <code>C:\Users\lfgs\tpm\tpmj\</code>,
+and you have created and cd'd into the folder <code>C:\Users\lfgs\tpm\tpmjdemo\</code>.
+</p>
+
+<pre>
+C:\Users\lfgs\tpm\tpmj>set CLASSPATH=C:\Users\lfgs\tpm\tpmj\lib\tpmj.jar;C:\Users\lfgs\tpm\tpmj\lib\bcprov-jdk15-131.jar
+</pre>
+
+<h4>Checking the status of the TPM</h4>
+
+<p>
+The following example was run on a machine
+whose TPM was cleared, and then activated and enabled
+via the BIOS.  At this point, however, ownership
+has not yet been taken.
+</p>
+<pre>
+C:\Users\lfgs\tpm\tpmj>java -Djava.library.path=C:\Users\lfgs\tpm\tpmj\lib\
+edu.mit.csail.tpmj.tools.TPMInfo
+ownerPwd = null, Encoded (NULL [no authorization]) = null
+
+*****
+Getting manufacturer ID ...
+TPM VENDOR ID = 0x4252434d (BRCM)
+----
+
+Getting version via TPM 1.1 way ...
+Returned: edu.mit.csail.tpmj.structs.TPM_STRUCT_VER: 01 01 00 00
+
+----
+
+Getting version via TPM 1.2 way ...
+Returned: edu.mit.csail.tpmj.structs.TPM_CAP_VERSION_INFO: 00 30 01 02 02 12 00
+00 00 42 52 43 4d 00 00
+tag: 0x30
+version: edu.mit.csail.tpmj.structs.TPM_VERSION: 01 02 02 12
+specLevel: 0x0
+errataRev: 0x0
+tpmVendorID: 0x4252434d
+vendorSpecificSize: 0x0
+vendorSpecific:
+
+----
+
+Getting TPM Flags (TPM 1.2 only) ...
+Getting TPM Permanent Flags ...
+Returned: TPM_PERMANENT_FLAGS:
+disable: false
+ownership: true
+deactivated: false
+readPubek: true
+disableOwnerClear: false
+allowMaintenance: false
+physicalPresenceLifetimeLock: true
+physicalPresenceHWEnable: false
+physicalPresenceCMDEnable: true
+CEKPUsed: false
+TPMpost: false
+TPMpostLock: false
+FIPS: false
+operator: false
+enableRevokeEK: false
+nvLocked: false
+readSRKPub: false
+tpmEstablished: true
+
+Getting TPM Volatile Flags ...
+Returned: TPM_STCLEAR_FLAGS:
+deactivated: false
+disableForceClear: false
+physicalPresence: false
+physicalPresenceLock: true
+bGlobalLock: false
+
+----
+
+Reading Public Endorsement Key using TPM_OwnerReadInternalPub (TPM 1.2 only) ...
+
+Error: java.lang.IllegalArgumentException: TPMAdminFuncs.TPM_OwnerReadInternalPu
+b: ownerAuth can't be null.
+
+Reading Public Endorsement Key using TPM_ReadPubek ...
+(using all-zeros as nonce)
+Public Endorsement Key:
+TPM_PUBKEY:
+algorithmParms = TPM_KEY_PARMS: algorithmID= 0x1, encScheme= 0x3, sigScheme= 0x1
+
+Parm (12 bytes):
+TPM_RSA_KEY_PARMS: keyLength=2048, numPrimes=2, exponent (0 bytes):
+pubKey: TPM_STORE_PUBKEY (256 bytes):
+ae da bd 06 34 c0 7b 18 d4 4f 40 00 dd 74 37 84 d5 f1 4a d9
+a5 00 6e ec 38 56 b9 d4 63 85 1d 0d 91 51 57 2b 93 3c 49 d8
+79 01 a4 fe 9a ac fd 08 01 8b ea 35 8d e5 d8 2e dd 4b 8c c7
+43 bb 7a c3 25 0c 4e 71 c5 c3 32 04 33 05 06 99 64 8f 40 22
+0c b8 a3 5f b4 ae f7 3d f7 d9 39 0a 54 a3 35 ac 69 74 06 fb
+b1 4c 8d 8d e3 cc 5b 45 ac 7f 2e 1f 94 2b 43 18 42 bd 6f 00
+a2 3b 24 5a dd 2e 37 d8 3c 66 11 22 6d 9d b4 de 08 32 6b 76
+8c ed 77 d6 bc 13 de 9c 8b da 22 80 dd 4a e1 96 18 6b c5 6b
+7c f0 59 9b 2c 8b fd 20 f0 74 21 fe 30 f8 f6 e9 95 c2 d4 b3
+8d e6 f4 02 00 fc c7 3b 67 c9 5f b1 d3 b8 b5 38 b1 9f 10 c3
+ae be 8d d5 48 f3 85 6d 88 a4 3c 84 11 90 33 93 58 c4 db c3
+d2 ec 8f 25 38 02 5d 2e 58 9b 7c d3 04 77 f1 23 d6 47 b5 36
+3a fa 9d 08 cb 83 0b e3 94 27 02 82 a8 0f 79 71
+
+----
+
+
+Getting number of PCRS:
+numPcrs = 24
+Reading PCRs
+PCR 0: 0000000000000000000000000000000000000000
+PCR 1: 0000000000000000000000000000000000000000
+PCR 2: 0000000000000000000000000000000000000000
+PCR 3: 0000000000000000000000000000000000000000
+PCR 4: 0000000000000000000000000000000000000000
+PCR 5: 0000000000000000000000000000000000000000
+PCR 6: 0000000000000000000000000000000000000000
+PCR 7: 0000000000000000000000000000000000000000
+PCR 8: 0000000000000000000000000000000000000000
+PCR 9: 0000000000000000000000000000000000000000
+PCR 10: 0000000000000000000000000000000000000000
+PCR 11: 0000000000000000000000000000000000000000
+PCR 12: 0000000000000000000000000000000000000000
+PCR 13: 0000000000000000000000000000000000000000
+PCR 14: 0000000000000000000000000000000000000000
+PCR 15: 0000000000000000000000000000000000000000
+PCR 16: 0000000000000000000000000000000000000000
+PCR 17: ffffffffffffffffffffffffffffffffffffffff
+PCR 18: ffffffffffffffffffffffffffffffffffffffff
+PCR 19: ffffffffffffffffffffffffffffffffffffffff
+PCR 20: ffffffffffffffffffffffffffffffffffffffff
+PCR 21: ffffffffffffffffffffffffffffffffffffffff
+PCR 22: ffffffffffffffffffffffffffffffffffffffff
+PCR 23: ffffffffffffffffffffffffffffffffffffffff
+----
+
+Reading Key handles TPM 1.1 style
+TPM_KEY_HANDLES_LIST: 0 loaded handles
+
+----
+
+Reading KEY handles (TPM 1.2 style) ...
+(0 handles):
+
+----
+
+Reading CONTEXT handles (TPM 1.2 style) ...
+(0 handles):
+
+----
+
+Reading AUTH SESSION handles (TPM 1.2 style) ...
+(0 handles):
+
+----
+
+Reading TRANSPORT SESSION handles (TPM 1.2 style) ...
+(0 handles):
+
+----
+
+Reading monotonic counters (TPM 1.2 only) ...
+(0 counters):
+
+----
+</pre>
+
+<p>
+Note the following status bits indicating the TPM is enabled and activated.
+(But note that ownership = true does NOT mean there is an owner.)
+In this case, there is no owner yet.
+</p>
+<pre>
+disable: false
+ownership: true
+deactivated: false
+</pre>
+
+<h4>Taking Ownership</h4>
+
+<p>
+For Vista, it is probably best to take ownership
+using Vista itself.  Do this by running <tt>tpm.msc</tt>
+from a command prompt, and following the options given to you.
+Choose to type in your own owner password, and remember
+this.  You can use this password with TPM/J.
+The SRK password will be set to all zeros.
+To pass this password as an argument to the TPM/J tools, use "" or -zero.
+</p>
+
+The following is the output of TPMInfo after taking ownership using tpm.msc
+with password "tpmowner".
+<pre>
+C:\Users\lfgs\tpm\tpmj>java -Djava.library.path=C:\Users\lfgs\tpm\tpmj\lib\
+edu.mit.csail.tpmj.tools.TPMInfo tpmowner
+ownerPwd = tpmowner, Encoded (Infineon/Vista (SHA1 of UTF16LE without null termi
+nator) = 4ddb6f65c4d692cab6e3df8b7546228855578946
+
+*****
+Getting manufacturer ID ...
+TPM VENDOR ID = 0x4252434d (BRCM)
+----
+
+Getting version via TPM 1.1 way ...
+Returned: edu.mit.csail.tpmj.structs.TPM_STRUCT_VER: 01 01 00 00
+
+----
+
+Getting version via TPM 1.2 way ...
+Returned: edu.mit.csail.tpmj.structs.TPM_CAP_VERSION_INFO: 00 30 01 02 02 12 00
+00 00 42 52 43 4d 00 00
+tag: 0x30
+version: edu.mit.csail.tpmj.structs.TPM_VERSION: 01 02 02 12
+specLevel: 0x0
+errataRev: 0x0
+tpmVendorID: 0x4252434d
+vendorSpecificSize: 0x0
+vendorSpecific:
+
+----
+
+Getting TPM Flags (TPM 1.2 only) ...
+Getting TPM Permanent Flags ...
+Returned: TPM_PERMANENT_FLAGS:
+disable: false
+ownership: true
+deactivated: false
+readPubek: false
+disableOwnerClear: false
+allowMaintenance: false
+physicalPresenceLifetimeLock: true
+physicalPresenceHWEnable: false
+physicalPresenceCMDEnable: true
+CEKPUsed: false
+TPMpost: false
+TPMpostLock: false
+FIPS: false
+operator: false
+enableRevokeEK: false
+nvLocked: false
+readSRKPub: false
+tpmEstablished: true
+
+Getting TPM Volatile Flags ...
+Returned: TPM_STCLEAR_FLAGS:
+deactivated: false
+disableForceClear: false
+physicalPresence: false
+physicalPresenceLock: true
+bGlobalLock: false
+
+----
+
+Reading Public Endorsement Key using TPM_OwnerReadInternalPub (TPM 1.2 only) ...
+
+Public Endorsement Key:
+TPM_PUBKEY:
+algorithmParms = TPM_KEY_PARMS: algorithmID= 0x1, encScheme= 0x3, sigScheme= 0x1
+
+Parm (12 bytes):
+TPM_RSA_KEY_PARMS: keyLength=2048, numPrimes=2, exponent (0 bytes):
+pubKey: TPM_STORE_PUBKEY (256 bytes):
+ae da bd 06 34 c0 7b 18 d4 4f 40 00 dd 74 37 84 d5 f1 4a d9
+a5 00 6e ec 38 56 b9 d4 63 85 1d 0d 91 51 57 2b 93 3c 49 d8
+79 01 a4 fe 9a ac fd 08 01 8b ea 35 8d e5 d8 2e dd 4b 8c c7
+43 bb 7a c3 25 0c 4e 71 c5 c3 32 04 33 05 06 99 64 8f 40 22
+0c b8 a3 5f b4 ae f7 3d f7 d9 39 0a 54 a3 35 ac 69 74 06 fb
+b1 4c 8d 8d e3 cc 5b 45 ac 7f 2e 1f 94 2b 43 18 42 bd 6f 00
+a2 3b 24 5a dd 2e 37 d8 3c 66 11 22 6d 9d b4 de 08 32 6b 76
+8c ed 77 d6 bc 13 de 9c 8b da 22 80 dd 4a e1 96 18 6b c5 6b
+7c f0 59 9b 2c 8b fd 20 f0 74 21 fe 30 f8 f6 e9 95 c2 d4 b3
+8d e6 f4 02 00 fc c7 3b 67 c9 5f b1 d3 b8 b5 38 b1 9f 10 c3
+ae be 8d d5 48 f3 85 6d 88 a4 3c 84 11 90 33 93 58 c4 db c3
+d2 ec 8f 25 38 02 5d 2e 58 9b 7c d3 04 77 f1 23 d6 47 b5 36
+3a fa 9d 08 cb 83 0b e3 94 27 02 82 a8 0f 79 71
+
+----
+
+
+Getting number of PCRS:
+numPcrs = 24
+Reading PCRs
+PCR 0: 0000000000000000000000000000000000000000
+PCR 1: 0000000000000000000000000000000000000000
+PCR 2: 0000000000000000000000000000000000000000
+PCR 3: 0000000000000000000000000000000000000000
+PCR 4: 0000000000000000000000000000000000000000
+PCR 5: 0000000000000000000000000000000000000000
+PCR 6: 0000000000000000000000000000000000000000
+PCR 7: 0000000000000000000000000000000000000000
+PCR 8: 0000000000000000000000000000000000000000
+PCR 9: 0000000000000000000000000000000000000000
+PCR 10: 0000000000000000000000000000000000000000
+PCR 11: 0000000000000000000000000000000000000000
+PCR 12: 0000000000000000000000000000000000000000
+PCR 13: 0000000000000000000000000000000000000000
+PCR 14: 0000000000000000000000000000000000000000
+PCR 15: 0000000000000000000000000000000000000000
+PCR 16: 0000000000000000000000000000000000000000
+PCR 17: ffffffffffffffffffffffffffffffffffffffff
+PCR 18: ffffffffffffffffffffffffffffffffffffffff
+PCR 19: ffffffffffffffffffffffffffffffffffffffff
+PCR 20: ffffffffffffffffffffffffffffffffffffffff
+PCR 21: ffffffffffffffffffffffffffffffffffffffff
+PCR 22: ffffffffffffffffffffffffffffffffffffffff
+PCR 23: ffffffffffffffffffffffffffffffffffffffff
+----
+
+Reading Key handles TPM 1.1 style
+TPM_KEY_HANDLES_LIST: 0 loaded handles
+
+----
+
+Reading KEY handles (TPM 1.2 style) ...
+(0 handles):
+
+----
+
+Reading CONTEXT handles (TPM 1.2 style) ...
+(0 handles):
+
+----
+
+Reading AUTH SESSION handles (TPM 1.2 style) ...
+(0 handles):
+
+----
+
+Reading TRANSPORT SESSION handles (TPM 1.2 style) ...
+(0 handles):
+
+----
+
+Reading monotonic counters (TPM 1.2 only) ...
+(0 counters):
+
+----
+</pre>
+
+<h4>Create an AIK</h4>
+
+<pre>
+C:\Users\lfgs\tpm\tpmjdemo>java -Djava.library.path=C:\Users\lfgs\tpm\tpmj\lib\
+    edu.mit.csail.tpmj.tools.TPMCreateAIK aik.key test 0x12345678901234567890123
+45678901234567890 tpmowner
+
+Parsing command-line arguments ...
+
+aikPwd = test, Encoded (Infineon/Vista (SHA1 of UTF16LE without null terminator)
+ = 87f8ed9157125ffc4da9e06a7b8011ad80a53fe1
+labelPrivCA = 0x1234567890123456789012345678901234567890, Encoded (Hex) = 123456
+7890123456789012345678901234567890
+ownerPwd = tpmowner, Encoded (Infineon/Vista (SHA1 of UTF16LE without null termi
+nator) = 4ddb6f65c4d692cab6e3df8b7546228855578946
+srkPwd = null, Encoded (NULL [no authorization]) = null
+Executing TPM_SelfTestFull() ...
+Done in 968 ms.
+Executing TPM_GetTestResult() ...
+Done in 32 ms.
+Results: 00 7f ff 80
+Creating Identity Key ...
+DONE.
+
+ID KEY = Tag: 0x101
+Fill: 0x0
+Key Usage: 0x12
+Key Flags: 0x0
+AuthDataUsage: 0x1
+algorithmParms: TPM_KEY_PARMS: algorithmID= 0x1, encScheme= 0x1, sigScheme= 0x2
+Parm (12 bytes):
+TPM_RSA_KEY_PARMS: keyLength=2048, numPrimes=2, exponent (0 bytes):
+PCRInfo (0 bytes):
+pubKey: TPM_STORE_PUBKEY (256 bytes):
+9f f8 da 0b 49 cc 27 77 ef 9a b2 35 e4 b1 79 f5 98 cc dc 2c
+99 66 f4 59 f8 b1 37 62 b1 9a a8 5a 02 d6 a8 e0 f8 59 d6 54
+47 4f 9e 60 f8 60 3f 8c 44 f7 dd 8c 17 05 20 e1 e9 33 8c 14
+b3 1c 29 83 01 80 85 07 9c 56 8a 23 2c 37 9d 01 4d 4c d6 07
+e3 76 d1 ff 04 ff 72 5c bf 11 fb bb 0a 42 ac ee 28 bb 35 17
+d6 f2 91 b9 af b1 85 35 36 a4 e7 a2 e1 88 81 ef 1d 3a 07 0c
+84 c1 99 6e fd 14 0f 42 42 28 27 2d 67 a2 23 d8 f8 70 eb 44
+23 32 11 d1 1c 7d a3 16 23 10 e6 a1 ef 99 6c 49 f2 8f 20 36
+4b c3 50 e7 9a 97 fb e9 d0 8a 9c 5f f7 84 fd 20 0d 05 d5 de
+a7 26 8c db 08 c4 d2 e2 e9 28 0d 57 33 f9 6e 89 5e c3 e5 c4
+ad f3 7c 5a 5a 56 50 1d e3 db 4f 17 b3 96 61 57 c2 ef 01 af
+d5 49 6d 25 7c fe 1c 10 ed 6c dd 41 03 f3 62 6d 7e 95 da 99
+30 b1 3e 75 84 dd 93 3a df c9 eb 6f 50 ab 27 e1
+
+encData (256 bytes):
+05 05 1d ee ac d3 e9 5c 6b 08 8d 8f 75 55 67 82 b4 a9 6e e6
+3e e9 10 df 70 e7 7c dc 0b 99 74 23 ee bc 08 18 bf e4 6e 22
+e3 94 b6 e0 c9 a1 1b b7 47 a0 60 2c 29 64 86 96 18 1e 08 3d
+85 96 58 9f e7 a0 95 b2 5d e1 04 d0 aa 0f 5c 09 e3 78 9c 33
+72 85 e8 f8 56 15 60 63 5d a1 8d c6 20 91 31 8a ab 30 64 2e
+b1 c1 df a3 f6 87 a9 11 07 5f 79 bb 6f 17 21 33 71 ce 9a ff
+e1 ee 51 ac 89 42 74 2e 04 5b 8b 60 46 cb af 6e 6f 23 fa 36
+48 97 93 b4 d5 9d db be 86 ab 0f 13 8a 0c b0 89 f4 2d 3c ca
+90 6e 32 b4 bc f5 d7 53 f9 68 1a 35 c0 91 27 03 ec ce 64 38
+2b 05 c3 36 36 a8 5f 6e 83 31 4e d1 d8 15 76 5e 3f 84 4d 45
+78 af 1c e9 bb e2 bf 1a bc af 11 cf cb a0 bf 96 99 23 d4 9e
+b2 9d f6 e0 5e e6 92 88 2a ce 3e 56 0b 7b 56 7f 73 ef cb dd
+27 c3 2c b8 e3 ae 80 4d b1 8c 2d 66 81 0c b6 62
+
+
+
+Identity Binding = (256 bytes):
+
+3f 10 97 87 8b 20 3f 3c 2b f4 b9 16 5f 8a 0a bb fd f9 44 9d
+f4 92 38 36 13 eb 95 ee 97 ce 75 47 0a 3e 39 95 2f 3c 6b 30
+1e 92 72 a8 99 ec d7 1f a0 c7 33 77 e3 fb a7 4c f1 d8 87 20
+c3 8f d2 ba e8 e3 86 d4 d6 4d 2d f7 6a 78 85 1d 2b b7 d0 34
+0f 3c 3b d7 6f 9f 72 b0 de 4b 1e 0a 5e 85 5f d7 d3 c2 6f 29
+21 e4 4b 87 67 32 5b d4 a2 7e bf 92 23 0e 13 19 5a ae aa e8
+0a 05 b2 a8 f6 19 f8 96 90 5d f6 b1 03 1a 7f 1c af 1e 76 83
+0e 67 2c d7 32 01 be 0c 82 d7 35 81 89 4b 27 4b 74 6c f2 cc
+d7 94 f5 21 c7 15 69 54 07 95 49 04 49 17 eb 6f 88 cf 8c fd
+a0 20 19 6e ec 2c 94 2a 57 b7 80 45 67 b6 ac 6c 5d d5 ad 10
+16 b9 3d 9c 6c ba 91 d6 62 7f 65 b6 e6 2f 44 fe 36 31 54 3c
+18 44 10 9e 6f b1 e5 4f 10 41 e9 69 e4 98 34 cc 30 7e 1c 51
+5f 2b eb e9 90 5f 3e 08 dc cf bf 79 3f 56 83 2a
+
+Writing aik.key ...
+
+
+ **** NOW TESTING THE NEW AIK ****
+
+Reading aik.key ...
+buf == blob?true
+Key from file: Tag: 0x101
+Fill: 0x0
+Key Usage: 0x12
+Key Flags: 0x0
+AuthDataUsage: 0x1
+algorithmParms: TPM_KEY_PARMS: algorithmID= 0x1, encScheme= 0x1, sigScheme= 0x2
+Parm (12 bytes):
+TPM_RSA_KEY_PARMS: keyLength=2048, numPrimes=2, exponent (0 bytes):
+PCRInfo (0 bytes):
+pubKey: TPM_STORE_PUBKEY (256 bytes):
+9f f8 da 0b 49 cc 27 77 ef 9a b2 35 e4 b1 79 f5 98 cc dc 2c
+99 66 f4 59 f8 b1 37 62 b1 9a a8 5a 02 d6 a8 e0 f8 59 d6 54
+47 4f 9e 60 f8 60 3f 8c 44 f7 dd 8c 17 05 20 e1 e9 33 8c 14
+b3 1c 29 83 01 80 85 07 9c 56 8a 23 2c 37 9d 01 4d 4c d6 07
+e3 76 d1 ff 04 ff 72 5c bf 11 fb bb 0a 42 ac ee 28 bb 35 17
+d6 f2 91 b9 af b1 85 35 36 a4 e7 a2 e1 88 81 ef 1d 3a 07 0c
+84 c1 99 6e fd 14 0f 42 42 28 27 2d 67 a2 23 d8 f8 70 eb 44
+23 32 11 d1 1c 7d a3 16 23 10 e6 a1 ef 99 6c 49 f2 8f 20 36
+4b c3 50 e7 9a 97 fb e9 d0 8a 9c 5f f7 84 fd 20 0d 05 d5 de
+a7 26 8c db 08 c4 d2 e2 e9 28 0d 57 33 f9 6e 89 5e c3 e5 c4
+ad f3 7c 5a 5a 56 50 1d e3 db 4f 17 b3 96 61 57 c2 ef 01 af
+d5 49 6d 25 7c fe 1c 10 ed 6c dd 41 03 f3 62 6d 7e 95 da 99
+30 b1 3e 75 84 dd 93 3a df c9 eb 6f 50 ab 27 e1
+
+encData (256 bytes):
+05 05 1d ee ac d3 e9 5c 6b 08 8d 8f 75 55 67 82 b4 a9 6e e6
+3e e9 10 df 70 e7 7c dc 0b 99 74 23 ee bc 08 18 bf e4 6e 22
+e3 94 b6 e0 c9 a1 1b b7 47 a0 60 2c 29 64 86 96 18 1e 08 3d
+85 96 58 9f e7 a0 95 b2 5d e1 04 d0 aa 0f 5c 09 e3 78 9c 33
+72 85 e8 f8 56 15 60 63 5d a1 8d c6 20 91 31 8a ab 30 64 2e
+b1 c1 df a3 f6 87 a9 11 07 5f 79 bb 6f 17 21 33 71 ce 9a ff
+e1 ee 51 ac 89 42 74 2e 04 5b 8b 60 46 cb af 6e 6f 23 fa 36
+48 97 93 b4 d5 9d db be 86 ab 0f 13 8a 0c b0 89 f4 2d 3c ca
+90 6e 32 b4 bc f5 d7 53 f9 68 1a 35 c0 91 27 03 ec ce 64 38
+2b 05 c3 36 36 a8 5f 6e 83 31 4e d1 d8 15 76 5e 3f 84 4d 45
+78 af 1c e9 bb e2 bf 1a bc af 11 cf cb a0 bf 96 99 23 d4 9e
+b2 9d f6 e0 5e e6 92 88 2a ce 3e 56 0b 7b 56 7f 73 ef cb dd
+27 c3 2c b8 e3 ae 80 4d b1 8c 2d 66 81 0c b6 62
+
+
+Loading the key into the TPM ...
+keyHandle = 0x3d203df3
+Reading the public key ...
+PubKey=TPM_PUBKEY:
+algorithmParms = TPM_KEY_PARMS: algorithmID= 0x1, encScheme= 0x1, sigScheme= 0x2
+
+Parm (12 bytes):
+TPM_RSA_KEY_PARMS: keyLength=2048, numPrimes=2, exponent (0 bytes):
+pubKey: TPM_STORE_PUBKEY (256 bytes):
+9f f8 da 0b 49 cc 27 77 ef 9a b2 35 e4 b1 79 f5 98 cc dc 2c
+99 66 f4 59 f8 b1 37 62 b1 9a a8 5a 02 d6 a8 e0 f8 59 d6 54
+47 4f 9e 60 f8 60 3f 8c 44 f7 dd 8c 17 05 20 e1 e9 33 8c 14
+b3 1c 29 83 01 80 85 07 9c 56 8a 23 2c 37 9d 01 4d 4c d6 07
+e3 76 d1 ff 04 ff 72 5c bf 11 fb bb 0a 42 ac ee 28 bb 35 17
+d6 f2 91 b9 af b1 85 35 36 a4 e7 a2 e1 88 81 ef 1d 3a 07 0c
+84 c1 99 6e fd 14 0f 42 42 28 27 2d 67 a2 23 d8 f8 70 eb 44
+23 32 11 d1 1c 7d a3 16 23 10 e6 a1 ef 99 6c 49 f2 8f 20 36
+4b c3 50 e7 9a 97 fb e9 d0 8a 9c 5f f7 84 fd 20 0d 05 d5 de
+a7 26 8c db 08 c4 d2 e2 e9 28 0d 57 33 f9 6e 89 5e c3 e5 c4
+ad f3 7c 5a 5a 56 50 1d e3 db 4f 17 b3 96 61 57 c2 ef 01 af
+d5 49 6d 25 7c fe 1c 10 ed 6c dd 41 03 f3 62 6d 7e 95 da 99
+30 b1 3e 75 84 dd 93 3a df c9 eb 6f 50 ab 27 e1
+
+Trying TPM_Quote of PCR 0 ...
+output=TPM_QuoteOutput (data params only):
+PCRData =
+TPM_PCR_COMPOSITE:
+select = TPM_PCR_SELECTION for 24 PCRs: 0 (0x010000)
+PcrValues (numValues=1, valueSize=20):
+0000000000000000000000000000000000000000
+
+Signature (256 bytes): 199a1979058501657950d652fc02dc9c544126002aa9ad5972c3c9412
+3ebb33eddb9f46d55e8e567a3dae7c2672ea6628cf8e1a57b8b2553f33e8e81537b2da0b59dcb028
+bacb38c39fa2f0e488477fc37d4c0be374c56b3e2f9f275ab71234614b25be3e24436f2270fa6f81
+769d886f15408c93218a784ce2a7c3e66e573cc33b96f31ccac02adb9a1365a4750c43862d96a9cd
+88a9515b8da747b22df3d1ed02708627c40ba8d36b4e0a0bc3a05c60950726ab70df48a0c4f90fe6
+62c8b129e2265dd777177c01e9570b0f09d0ed6e996e1d688037c8c590a09e20182ed2d00f8b1275
+f58b07c20911be92760832518baa3a64364c6018deeb33278012690
+Verifying signature by software ...
+OK? true
+
+
+ **** NOW TESTING SIGNING OF ARBITRARY DATA (THIS SHOULD FAIL!) ****
+
+Trying to sign 'Hello World!' ... (THIS SHOULD FAIL)
+TPM Exception: edu.mit.csail.tpmj.TPMErrorReturnCodeException
+Occured on input: edu.mit.csail.tpmj.commands.TPM_Sign:
+00 c2 00 00 00 53 00 00 00 3c 3d 20 3d f3 00 00 00 14 2e f7
+bd e6 08 ce 54 04 e9 7d 5f 04 2f 95 f8 9f 1c 23 28 71 3d 20
+38 73 3a 9b 22 b3 3a 06 d2 b5 99 1d 32 1a e3 6b 5a 6b 2e 31
+95 21 00 f0 7f 51 17 d4 c3 74 7b 99 1a af 65 24 c0 38 fa a5
+92 2b b3
+
+Output (if any): edu.mit.csail.tpmj.structs.ByteArrayTPMOutputStruct: 00 c4 00 0
+0 00 0a 00 00 00 24
+Return Code (if any): 36 (TPM_INVALID_KEYUSAGE)
+
+
+Evicting keyHandle: 0x3d203df3
+OK
+
+C:\Users\lfgs\tpm\tpmjdemo>dir
+ Volume in drive C has no label.
+ Volume Serial Number is 2833-F587
+
+ Directory of C:\Users\lfgs\tpm\tpmjdemo
+
+04/02/2007  10:43 PM    <DIR>          .
+04/02/2007  10:43 PM    <DIR>          ..
+04/02/2007  10:43 PM               559 aik.key
+               1 File(s)            559 bytes
+               2 Dir(s)   8,301,658,112 bytes free
+</pre>
+
+<h4>Create a legacy key</h4>
+
+A legacy key is good for signing and unbinding.
+Use of such keys has been deprecated since TPM 1.2 for security reasons
+but we use it here because it is good for demo purposes.
+
+<pre>
+C:\Users\lfgs\tpm\tpmjdemo>java -Djava.library.path=C:\Users\lfgs\tpm\tpmj\lib\
+    edu.mit.csail.tpmj.tools.TPMCreateKey testkey.key l test SRK /m test
+
+Parsing command-line arguments ...
+
+keyType = l
+keyPwd = test, Encoded (Infineon/Vista (SHA1 of UTF16LE without null terminator)
+ = 87f8ed9157125ffc4da9e06a7b8011ad80a53fe1
+Using SRK as parent.
+parentPwd = null, Encoded (NULL [no authorization]) = null
+m = test, Encoded (Infineon/Vista (SHA1 of UTF16LE without null terminator) = 87
+f8ed9157125ffc4da9e06a7b8011ad80a53fe1
+Key will be migratable.
+
+Creating the Key ...
+Returned wrapped key: Tag: 0x101
+Fill: 0x0
+Key Usage: 0x15
+Key Flags: 0x2
+AuthDataUsage: 0x1
+algorithmParms: TPM_KEY_PARMS: algorithmID= 0x1, encScheme= 0x3, sigScheme= 0x2
+Parm (12 bytes):
+TPM_RSA_KEY_PARMS: keyLength=2048, numPrimes=2, exponent (0 bytes):
+PCRInfo (0 bytes):
+pubKey: TPM_STORE_PUBKEY (256 bytes):
+97 17 32 0a 9b 10 61 37 4d c1 7b bc 3a c9 86 07 44 e2 ca f4
+a8 ab 4c 08 f3 0a 40 0f 2f d0 c0 54 94 4d 80 1e 1b 04 94 d8
+4f 08 ec a8 e2 bc cc 2e 48 7a 79 ac 71 76 b4 c1 d9 c8 7a 81
+1d 06 06 5a 05 7b ce 37 22 76 3d d7 14 ff 09 6e c9 89 1a 9c
+64 66 03 aa 2a bf ae 78 e4 f1 70 7c f7 4f dc ae 3b 55 75 64
+81 c2 19 e3 c9 54 e8 b7 65 bc ae ce b1 75 bb 42 53 85 d6 88
+1a a9 2a ef 5d c3 98 d3 c6 2f fd 8e e4 92 69 5e 9e 22 b2 6d
+86 c1 f3 67 a1 3e d1 b0 81 80 65 1d e9 ca e1 57 75 8f 55 da
+0b 1b c1 0a 6d bd 4e 5f ce 45 38 b7 96 c0 14 e9 e3 8b ab 48
+ab 68 5e 13 04 8c ae 4e 24 13 74 51 44 37 10 65 87 85 0f 7d
+79 9f 81 90 67 f6 ae 4c a6 5e e8 19 47 45 ce d3 e3 9c 40 18
+68 90 bd ca fa 73 46 47 8d eb 7c 00 15 f3 ab f3 fd 5a 30 11
+a7 76 94 ad 99 c3 8d 38 45 0d 42 29 1c 88 0c 51
+
+encData (256 bytes):
+94 4e 25 bb 15 d2 77 89 eb 98 17 72 07 30 f5 65 96 00 06 1b
+54 f8 6e 6b a6 53 66 79 dd 21 3f ae 72 f5 08 ad a0 7e 75 9a
+2e 57 81 0b df 5e 5f e3 25 37 c2 c5 1d 34 43 c7 30 57 08 d9
+34 88 3f 53 5c e7 2d 62 a8 25 7e 94 ca 89 29 60 19 92 29 e7
+dd 8a e9 1b 0e b7 b3 32 f9 a7 c3 43 88 6e c0 46 82 f8 5b d3
+e3 bd e7 12 b9 ab f6 bd e7 a8 e2 3a 1f 9f 7f 27 73 30 b0 c9
+70 ae 07 d6 02 7c 84 5e 45 54 26 ec db 4a 59 63 20 9b eb 7a
+f0 f5 9c f3 69 94 e7 12 2b 0f e0 52 40 00 42 74 f7 87 2b 4b
+47 76 a7 7f 8a 01 2d 07 c3 6f 07 e5 21 99 60 d2 e9 18 67 69
+0f 20 cc be e3 29 5a 63 8b 6c 87 59 7f c8 3c 08 2e bb 6e 59
+11 37 d2 e3 52 f0 d6 1f db 8e 5b 75 bd 74 05 79 57 91 9b af
+1c cb 86 9c d8 1a 5e 2b 5b 91 69 19 fc 9d b7 9f 7a 33 e4 a3
+35 1a 58 10 91 3b 97 4d cd 4f 38 dd 87 69 28 eb
+
+
+
+Writing testkey.key ...
+
+Loading the key into the TPM ...
+keyHandle = 0x3d203df3
+
+Reading the public key ...
+PubKey=TPM_PUBKEY:
+algorithmParms = TPM_KEY_PARMS: algorithmID= 0x1, encScheme= 0x3, sigScheme= 0x2
+
+Parm (12 bytes):
+TPM_RSA_KEY_PARMS: keyLength=2048, numPrimes=2, exponent (0 bytes):
+pubKey: TPM_STORE_PUBKEY (256 bytes):
+97 17 32 0a 9b 10 61 37 4d c1 7b bc 3a c9 86 07 44 e2 ca f4
+a8 ab 4c 08 f3 0a 40 0f 2f d0 c0 54 94 4d 80 1e 1b 04 94 d8
+4f 08 ec a8 e2 bc cc 2e 48 7a 79 ac 71 76 b4 c1 d9 c8 7a 81
+1d 06 06 5a 05 7b ce 37 22 76 3d d7 14 ff 09 6e c9 89 1a 9c
+64 66 03 aa 2a bf ae 78 e4 f1 70 7c f7 4f dc ae 3b 55 75 64
+81 c2 19 e3 c9 54 e8 b7 65 bc ae ce b1 75 bb 42 53 85 d6 88
+1a a9 2a ef 5d c3 98 d3 c6 2f fd 8e e4 92 69 5e 9e 22 b2 6d
+86 c1 f3 67 a1 3e d1 b0 81 80 65 1d e9 ca e1 57 75 8f 55 da
+0b 1b c1 0a 6d bd 4e 5f ce 45 38 b7 96 c0 14 e9 e3 8b ab 48
+ab 68 5e 13 04 8c ae 4e 24 13 74 51 44 37 10 65 87 85 0f 7d
+79 9f 81 90 67 f6 ae 4c a6 5e e8 19 47 45 ce d3 e3 9c 40 18
+68 90 bd ca fa 73 46 47 8d eb 7c 00 15 f3 ab f3 fd 5a 30 11
+a7 76 94 ad 99 c3 8d 38 45 0d 42 29 1c 88 0c 51
+
+
+Trying to sign 'Hello World!' ...
+Signature returned (256 bytes): 930bb7e88c00ae77bab6abc53ede456a15b7723325828c27
+c1ab24ae8ddbdc84506c11cf53384d682f4bd0f19c7f36d0f295217c740afc8ef89663e9fcff4228
+ecd83bbedb38ab4343e728408394ff31588e6381ed7e266b02f01fe471623135451aa4b961c01e86
+9791e04c6301bce53abd97c7586534989e4294ce3e236f78a3bc93e16167be4f1435b6fcddb888b5
+5739934ad692f2efde4c95087c75bd4d7e75a0d5592148fdf318ff4fa6a3198667c1d7b391deabc0
+c490f8922ada5ba5195a789e4e4571e686063d2301fdf4dc67118a0149bc18bfd13438b9d70d87f5
+5bd7cfa153424acef84763e6f0c9624348d0af6911c7cee83739444f5c200491
+Verifying signature ...
+Signature OK? true
+
+Binding 'Hello World!' ...
+Encrypted Data (256 bytes): 7f3ed9b8f8500830bb94c29218fdd3d9339fabae4e08efd4c1dc
+999ecb22e5d2b039c9b4ec45f3e9b312e673c6cca24ccf787ff0224cd623b150bf150219b0134f3e
+5ce0e6db9747b8943f53e2686516dcc460dedd3e03a1d9e1a47052e8780a71f290cc5138fc93e7df
+9eaec5290cf8c303cbf9032d672205857e08036d0e144eadf6701ee99adaa7f68c0d095010d10f4f
+a860123a8b519b824e656537de5c335004efc579a703b1d20cd156791ae9fe8a6455a998a4d3012e
+8d0457b17efebc779f136dc9174d9b841703f5155a0192b6c87ba894fc7548284e337ba75f39e7b0
+2d96d40072ab17876cd464114b3087ad6fa0ac784bbbbf29a9866880b0a5
+
+UnBinding 'Hello World!' ...
+Unbound Data returned (12 bytes): 48 65 6c 6c 6f 20 57 6f 72 6c 64 21
+Payload as string: Hello World!
+
+Evicting keyHandle: 0x3d203df3
+OK
+
+
+C:\Users\lfgs\tpm\tpmjdemo>dir
+ Volume in drive C has no label.
+ Volume Serial Number is 2833-F587
+
+ Directory of C:\Users\lfgs\tpm\tpmjdemo
+
+04/02/2007  10:46 PM    <DIR>          .
+04/02/2007  10:46 PM    <DIR>          ..
+04/02/2007  10:43 PM               559 aik.key
+04/02/2007  10:46 PM               559 testkey.key
+               2 File(s)          1,118 bytes
+               2 Dir(s)   8,301,584,384 bytes free
+</pre>
+
+
+<h4>Loading a key and using it for reading and signing</h4>
+
+<a name="vistaloadkeyproblem"></a>
+<p>
+<b>Note:</b> using the current implementation of the TPM/J Vista TBS 
+driver class, the LoadKey tool works, but the key that it loads 
+is unloaded when the program exits.  The reason for this
+is that TPM/J creates a new TBS session every time 
+the TPM driver class is initialized, and there is currently
+no way to make two applications running in a different
+Java VM share the same TBS session.  When the program
+exits, the TBS session is closed, and Vista releases
+all the resources used by that session, so the key does
+not remain loaded in the TPM.
+</p>
+
+<p>
+Because of this problem, using other
+TPM/J tools (such as TPMSign, TPMUnbind, etc.),
+that depend on having a key handle available,
+does <em>not</em> work under Vista right now.
+However, note that <em>within the same program</em>,
+loading a key, and using the resulting key handle
+works.  An example is actually part of the CreateKey
+and CreateAIK tools.
+</p>
+
+<p>
+We are working on modified versions of the 
+TPM/J tools which will allow the user to specify
+an unloaded key file instead of a loaded key handle.
+This feature should be in the next release.
+</p>
+
+
+<h4>PCR operations</h4>
+
+<h5>Listing the PCRs quickly</h5>
+<pre>
+C:\Users\lfgs\tpm\tpmjdemo>java -Djava.library.path=C:\Users\lfgs\tpm\tpmj\lib\
+    edu.mit.csail.tpmj.tools.TPMReadPCRs
+PCR [0] 0000000000000000000000000000000000000000
+PCR [1] 0000000000000000000000000000000000000000
+PCR [2] 0000000000000000000000000000000000000000
+PCR [3] 0000000000000000000000000000000000000000
+PCR [4] 0000000000000000000000000000000000000000
+PCR [5] 0000000000000000000000000000000000000000
+PCR [6] 0000000000000000000000000000000000000000
+PCR [7] 0000000000000000000000000000000000000000
+PCR [8] 0000000000000000000000000000000000000000
+PCR [9] 0000000000000000000000000000000000000000
+PCR [10] 0000000000000000000000000000000000000000
+PCR [11] 0000000000000000000000000000000000000000
+PCR [12] 0000000000000000000000000000000000000000
+PCR [13] 0000000000000000000000000000000000000000
+PCR [14] 0000000000000000000000000000000000000000
+PCR [15] 0000000000000000000000000000000000000000
+PCR [16] 0000000000000000000000000000000000000000
+PCR [17] FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+PCR [18] FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+PCR [19] FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+PCR [20] FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+PCR [21] FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+PCR [22] FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+PCR [23] FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+
+C:\Users\lfgs\tpm\tpmjdemo>
+</pre>
+
+<h5>Extending a PCR</h5>
+
+<p>
+<b>Warning!</b>
+These may interfere with other applications that depend on the PCR configurations.
+In particular, Bitlocker under Vista may depend on the PCRs.
+Use at your own risk!
+</p>
+
+<pre>
+C:\Users\lfgs\tpm\tpmjdemo>java -Djava.library.path=C:\Users\lfgs\tpm\tpmj\lib\
+    edu.mit.csail.tpmj.tools.TPMExtend 8 0x1234567890123456789012345678901234567
+890
+
+Parsing command-line arguments ...
+
+data = 0x1234567890123456789012345678901234567890, Encoded (Hex) = 1234567890123
+456789012345678901234567890
+PCR 8:
+Old value: 0000000000000000000000000000000000000000
+Extending by 1234567890123456789012345678901234567890...
+New value: d70c2b7c26f239e78542ad24bf4c3e64337a6bea
+
+C:\Users\lfgs\tpm\tpmjdemo>
+
+C:\Users\lfgs\tpm\tpmjdemo>java -Djava.library.path=C:\Users\lfgs\tpm\tpmj\lib\
+    edu.mit.csail.tpmj.tools.TPMReadPCRs
+PCR [0] 0000000000000000000000000000000000000000
+PCR [1] 0000000000000000000000000000000000000000
+PCR [2] 0000000000000000000000000000000000000000
+PCR [3] 0000000000000000000000000000000000000000
+PCR [4] 0000000000000000000000000000000000000000
+PCR [5] 0000000000000000000000000000000000000000
+PCR [6] 0000000000000000000000000000000000000000
+PCR [7] 0000000000000000000000000000000000000000
+PCR [8] D70C2B7C26F239E78542AD24BF4C3E64337A6BEA
+PCR [9] 0000000000000000000000000000000000000000
+PCR [10] 0000000000000000000000000000000000000000
+PCR [11] 0000000000000000000000000000000000000000
+PCR [12] 0000000000000000000000000000000000000000
+PCR [13] 0000000000000000000000000000000000000000
+PCR [14] 0000000000000000000000000000000000000000
+PCR [15] 0000000000000000000000000000000000000000
+PCR [16] 0000000000000000000000000000000000000000
+PCR [17] FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+PCR [18] FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+PCR [19] FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+PCR [20] FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+PCR [21] FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+PCR [22] FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+PCR [23] FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+</pre>
+
+<h5>Quoting the PCRs and Verifying the Quote</h5>
+
+Quoting currently doesn't work under Vista because it requires a loaded key handle.
+<a href="#vistaloadkeyproblem">(See more info here.)</a>
+
+<h4>Sealing and Unsealing data</h4>
+
+<h5>Sealing and unsealing Data without dependence on PCRs</h5>
+
+<p>
+Sealing data without dependence on PCRs (no PCRs given after
+the dataPwd on the command line) 
+allows you to encrypt
+data that can be decrypted (unsealed) only on the same TPM,
+and with knowledge of both the storage key password,
+and the data password.
+</p>
+<pre>
+C:\Users\lfgs\tpm\tpmjdemo>dir
+ Volume in drive C has no label.
+ Volume Serial Number is 2833-F587
+
+ Directory of C:\Users\lfgs\tpm\tpmjdemo
+
+04/02/2007  10:48 PM    <DIR>          .
+04/02/2007  10:48 PM    <DIR>          ..
+04/02/2007  10:43 PM               559 aik.key
+04/02/2007  10:48 PM                15 HelloWorld.txt
+04/02/2007  10:46 PM               559 testkey.key
+               3 File(s)          1,133 bytes
+               2 Dir(s)   8,302,649,344 bytes free
+
+C:\Users\lfgs\tpm\tpmjdemo>java -Djava.library.path=C:\Users\lfgs\tpm\tpmj\lib\
+    edu.mit.csail.tpmj.tools.TPMSeal HelloWorld.txt SRK "" foo
+
+Parsing command-line arguments ...
+
+Using SRK to seal.
+keyPwd = , Encoded (All zeros) = 0000000000000000000000000000000000000000
+dataPwd = foo, Encoded (Infineon/Vista (SHA1 of UTF16LE without null terminator)
+ = b91c0b9b01341768775b9133b367c86c196061c8
+
+*** Reading Data *** ...
+48 65 6c 6c 6f 20 57 6f 72 6c 64 21 20 0d 0a
+
+*** Reading PCR configuation to seal data to *** ...
+PCRs will NOT be used as a condition for unsealing
+
+*** Sealing Data *** ...
+Encrypted data structure =
+TPM_STORED_DATA: ver: edu.mit.csail.tpmj.structs.TPM_STRUCT_VER: 01 01 00 00
+sealInfo: null
+encData (256 bytes):
+6a f9 df ed 7c 34 9e 1d b7 f6 c8 fd 7d fa c0 c6 14 87 93 43
+ad 05 4f 55 d0 98 53 b3 77 f5 c4 9c a6 ae 5b 77 bf dd 41 88
+69 b2 bd 0a c4 19 14 33 92 fb f2 6e a1 82 9b 99 b9 b2 12 35
+3d dd 35 01 e2 d0 c9 02 06 34 88 7d 0a 4b 95 b8 49 d3 3c e6
+62 e3 df 73 4c 60 9f d5 45 60 40 18 48 f6 d6 2e 2a 95 00 ae
+96 db 0e 45 ea f0 f2 10 3a 58 8e b8 db b3 e1 44 03 ab 8a d1
+8c f0 bf c0 aa 78 ce ff 88 f1 b0 c0 44 af 99 4c cc d1 da fa
+20 f2 b1 09 bc 20 0a 59 69 ef bd 24 f5 00 06 25 7b fe f5 4c
+08 c6 5e 21 e6 06 ed 8d 25 30 a6 be ca 18 4b 1f 62 fe 07 4b
+06 a9 16 e8 31 d5 2f 5a e7 2e 24 24 98 94 34 7b 3a 95 b1 d4
+76 a0 c3 f9 70 21 84 b3 2e e5 3c f8 99 82 e1 d4 35 c7 b3 f1
+08 c7 fe 08 3f 63 c4 fd 99 e3 0d 62 0e 43 cf 0b 3f 37 21 70
+a5 ae 69 fd f6 49 d3 3b ae 5c a2 b4 dc 8e cb d4
+
+Writing to file HelloWorld.txt.sealed
+DONE.
+
+*** Testing Unseal *** ...
+48 65 6c 6c 6f 20 57 6f 72 6c 64 21 20 0d 0a
+
+C:\Users\lfgs\tpm\tpmjdemo>dir
+ Volume in drive C has no label.
+ Volume Serial Number is 2833-F587
+
+ Directory of C:\Users\lfgs\tpm\tpmjdemo
+
+04/03/2007  04:30 PM    <DIR>          .
+04/03/2007  04:30 PM    <DIR>          ..
+04/02/2007  10:43 PM               559 aik.key
+04/02/2007  10:48 PM                15 HelloWorld.txt
+04/03/2007  04:30 PM               268 HelloWorld.txt.sealed
+04/02/2007  10:46 PM               559 testkey.key
+               4 File(s)          1,401 bytes
+               2 Dir(s)   8,302,575,616 bytes free
+
+C:\Users\lfgs\tpm\tpmjdemo>java -Djava.library.path=C:\Users\lfgs\tpm\tpmj\lib\
+    edu.mit.csail.tpmj.tools.TPMUnseal HelloWorld.txt.sealed SRK "" foo
+
+Parsing command-line arguments ...
+
+Using SRK to seal.
+keyPwd = , Encoded (All zeros) = 0000000000000000000000000000000000000000
+dataPwd = foo, Encoded (Infineon/Vista (SHA1 of UTF16LE without null terminator)
+ = b91c0b9b01341768775b9133b367c86c196061c8
+
+*** Reading SealedData from file HelloWorld.txt.sealed *** ...
+Encrypted data structure =
+TPM_STORED_DATA: ver: edu.mit.csail.tpmj.structs.TPM_STRUCT_VER: 01 01 00 00
+sealInfo: null
+encData (256 bytes):
+6a f9 df ed 7c 34 9e 1d b7 f6 c8 fd 7d fa c0 c6 14 87 93 43
+ad 05 4f 55 d0 98 53 b3 77 f5 c4 9c a6 ae 5b 77 bf dd 41 88
+69 b2 bd 0a c4 19 14 33 92 fb f2 6e a1 82 9b 99 b9 b2 12 35
+3d dd 35 01 e2 d0 c9 02 06 34 88 7d 0a 4b 95 b8 49 d3 3c e6
+62 e3 df 73 4c 60 9f d5 45 60 40 18 48 f6 d6 2e 2a 95 00 ae
+96 db 0e 45 ea f0 f2 10 3a 58 8e b8 db b3 e1 44 03 ab 8a d1
+8c f0 bf c0 aa 78 ce ff 88 f1 b0 c0 44 af 99 4c cc d1 da fa
+20 f2 b1 09 bc 20 0a 59 69 ef bd 24 f5 00 06 25 7b fe f5 4c
+08 c6 5e 21 e6 06 ed 8d 25 30 a6 be ca 18 4b 1f 62 fe 07 4b
+06 a9 16 e8 31 d5 2f 5a e7 2e 24 24 98 94 34 7b 3a 95 b1 d4
+76 a0 c3 f9 70 21 84 b3 2e e5 3c f8 99 82 e1 d4 35 c7 b3 f1
+08 c7 fe 08 3f 63 c4 fd 99 e3 0d 62 0e 43 cf 0b 3f 37 21 70
+a5 ae 69 fd f6 49 d3 3b ae 5c a2 b4 dc 8e cb d4
+
+
+*** Unsealing *** ...
+48 65 6c 6c 6f 20 57 6f 72 6c 64 21 20 0d 0a
+
+*** Writing to file HelloWorld.txt.unsealed *** ...
+DONE.
+
+C:\Users\lfgs\tpm\tpmjdemo>type HelloWorld.txt.unsealed
+Hello World!
+</pre>
+
+<h5>Sealing and Unsealing data to current PCR configuration</h5>
+
+<pre>
+C:\Users\lfgs\tpm\tpmjdemo>java -Djava.library.path=C:\Users\lfgs\tpm\tpmj\lib\
+    edu.mit.csail.tpmj.tools.TPMSeal HelloWorld.txt SRK "" foo 7 8
+
+Parsing command-line arguments ...
+
+Using SRK to seal.
+keyPwd = , Encoded (All zeros) = 0000000000000000000000000000000000000000
+dataPwd = foo, Encoded (Infineon/Vista (SHA1 of UTF16LE without null terminator)
+ = b91c0b9b01341768775b9133b367c86c196061c8
+
+*** Reading Data *** ...
+48 65 6c 6c 6f 20 57 6f 72 6c 64 21 20 0d 0a
+
+*** Reading PCR configuation to seal data to *** ...
+PCRs: 7 8
+TPM_PCR_COMPOSITE:
+select = TPM_PCR_SELECTION for 24 PCRs: 7 8 (0x800100)
+PcrValues (numValues=2, valueSize=40):
+0000000000000000000000000000000000000000
+d70c2b7c26f239e78542ad24bf4c3e64337a6bea
+
+digest: 22511bf7c5fb74e07777520c166666c1c12d473d
+
+*** Sealing Data *** ...
+Encrypted data structure =
+TPM_STORED_DATA: ver: edu.mit.csail.tpmj.structs.TPM_STRUCT_VER: 01 01 00 00
+sealInfo: TPM_PCR_INFO:
+pcrSelection = TPM_PCR_SELECTION for 24 PCRs: 7 8 (0x800100)
+digestAtRelease =  22511bf7c5fb74e07777520c166666c1c12d473d
+digestAtCreation =  22511bf7c5fb74e07777520c166666c1c12d473d
+
+encData (256 bytes):
+06 9c 6a fc dc 79 66 fc 06 5a c6 6c d9 55 8e 95 96 aa 72 4a
+87 50 85 b2 50 41 8a 1a 9b ad 6c 22 a9 ce 91 38 33 ae d2 0f
+27 c8 47 56 23 4f 9c 43 b6 19 fa c4 38 95 a5 5e fb 79 81 13
+44 60 d7 e6 e5 6d 06 69 0f 69 6b 72 4d 39 c8 67 27 c7 7e 1f
+b3 54 f6 62 b8 a9 3a c7 75 ed 5a 1d b4 b1 8e 3a 6e 34 e5 8c
+51 3c fc ef 5c 3f 95 5a ea 53 78 05 fd 58 e9 c3 94 62 5f 4a
+de 3b 35 4e 96 b0 ca ce 98 58 5e 69 cf a8 b8 63 28 98 05 1c
+2a 2b 1a 9e 2e 7d 4c d7 f6 f2 80 ab c3 84 98 d5 9d 66 63 76
+19 40 cd 99 36 9f 5f ea 4e b8 3e 45 74 8c 30 25 4d ad 71 bd
+54 91 3c 25 14 18 ac b5 8b c8 04 23 58 51 50 c4 36 f8 29 58
+ab ea 60 24 08 20 8e c3 f5 2d 3a 11 ee d5 46 a8 8f 8e ee 40
+42 6a 46 d6 89 0c bc 46 e7 96 40 cc 97 da ca ab c0 7e 25 33
+ee f7 52 d7 e0 dc 76 9d 3a 87 22 0b 80 c3 28 e4
+
+Writing to file HelloWorld.txt.sealed
+DONE.
+
+*** Testing Unseal *** ...
+48 65 6c 6c 6f 20 57 6f 72 6c 64 21 20 0d 0a
+
+C:\Users\lfgs\tpm\tpmjdemo>java -Djava.library.path=C:\Users\lfgs\tpm\tpmj\lib\
+    edu.mit.csail.tpmj.tools.TPMUnseal HelloWorld.txt.sealed SRK "" foo 7 8
+
+Parsing command-line arguments ...
+
+Using SRK to seal.
+keyPwd = , Encoded (All zeros) = 0000000000000000000000000000000000000000
+dataPwd = foo, Encoded (Infineon/Vista (SHA1 of UTF16LE without null terminator)
+ = b91c0b9b01341768775b9133b367c86c196061c8
+
+*** Reading SealedData from file HelloWorld.txt.sealed *** ...
+Encrypted data structure =
+TPM_STORED_DATA: ver: edu.mit.csail.tpmj.structs.TPM_STRUCT_VER: 01 01 00 00
+sealInfo: TPM_PCR_INFO:
+pcrSelection = TPM_PCR_SELECTION for 24 PCRs: 7 8 (0x800100)
+digestAtRelease =  22511bf7c5fb74e07777520c166666c1c12d473d
+digestAtCreation =  22511bf7c5fb74e07777520c166666c1c12d473d
+
+encData (256 bytes):
+06 9c 6a fc dc 79 66 fc 06 5a c6 6c d9 55 8e 95 96 aa 72 4a
+87 50 85 b2 50 41 8a 1a 9b ad 6c 22 a9 ce 91 38 33 ae d2 0f
+27 c8 47 56 23 4f 9c 43 b6 19 fa c4 38 95 a5 5e fb 79 81 13
+44 60 d7 e6 e5 6d 06 69 0f 69 6b 72 4d 39 c8 67 27 c7 7e 1f
+b3 54 f6 62 b8 a9 3a c7 75 ed 5a 1d b4 b1 8e 3a 6e 34 e5 8c
+51 3c fc ef 5c 3f 95 5a ea 53 78 05 fd 58 e9 c3 94 62 5f 4a
+de 3b 35 4e 96 b0 ca ce 98 58 5e 69 cf a8 b8 63 28 98 05 1c
+2a 2b 1a 9e 2e 7d 4c d7 f6 f2 80 ab c3 84 98 d5 9d 66 63 76
+19 40 cd 99 36 9f 5f ea 4e b8 3e 45 74 8c 30 25 4d ad 71 bd
+54 91 3c 25 14 18 ac b5 8b c8 04 23 58 51 50 c4 36 f8 29 58
+ab ea 60 24 08 20 8e c3 f5 2d 3a 11 ee d5 46 a8 8f 8e ee 40
+42 6a 46 d6 89 0c bc 46 e7 96 40 cc 97 da ca ab c0 7e 25 33
+ee f7 52 d7 e0 dc 76 9d 3a 87 22 0b 80 c3 28 e4
+
+
+*** Unsealing *** ...
+48 65 6c 6c 6f 20 57 6f 72 6c 64 21 20 0d 0a
+
+*** Writing to file HelloWorld.txt.unsealed *** ...
+DONE.
+
+C:\Users\lfgs\tpm\tpmjdemo>type HelloWorld.txt.unsealed
+Hello World!
+
+C:\Users\lfgs\tpm\tpmjdemo>
+</pre>
+
+<h4>Monotonic counter operations</h4>
+
+<h5>Creation</h5>
+<pre>
+C:\Users\lfgs\tpm\tpmjdemo>java -Djava.library.path=C:\Users\lfgs\tpm\tpmj\lib\
+    edu.mit.csail.tpmj.tools.TPMCreateCounter tpmowner CNTR foocount
+
+Parsing command-line arguments ...
+
+ownerPwd = tpmowner, Encoded (Infineon/Vista (SHA1 of UTF16LE without null termi
+nator) = 4ddb6f65c4d692cab6e3df8b7546228855578946
+counterPwd = foocount, Encoded (Infineon/Vista (SHA1 of UTF16LE without null ter
+minator) = 33353475e77df61d66a602d6dc57e90e1bbfa720
+Creating monotonic counter for label CNTR(0x434e5452) ...
+Created Counter ID 0xa000061
+TPM_COUNTER_VALUE: label: 0x434e5452 (CNTR), counter value: 0x1
+
+C:\Users\lfgs\tpm\tpmjdemo>
+</pre>
+
+<h5>Reading</h5>
+<pre>
+C:\Users\lfgs\tpm\tpmjdemo>java -Djava.library.path=C:\Users\lfgs\tpm\tpmj\lib\
+    edu.mit.csail.tpmj.tools.TPMReadCounter 0xa000061
+
+Parsing command-line arguments ...
+
+counterPwd = null, Encoded (NULL [no authorization]) = null
+Using NULL (all zeroes) as counterAuth
+Reading counter 0xa000061
+Output: TPM_COUNTER_VALUE: label: 0x434e5452 (CNTR), counter value: 0x1
+
+C:\Users\lfgs\tpm\tpmjdemo>
+</pre>
+
+<h5>Incrementing</h5>
+<pre>
+C:\Users\lfgs\tpm\tpmjdemo>java -Djava.library.path=C:\Users\lfgs\tpm\tpmj\lib\
+    edu.mit.csail.tpmj.tools.TPMReadCounter 0xa000061
+
+Parsing command-line arguments ...
+
+counterPwd = null, Encoded (NULL [no authorization]) = null
+Using NULL (all zeroes) as counterAuth
+Reading counter 0xa000061
+Output: TPM_COUNTER_VALUE: label: 0x434e5452 (CNTR), counter value: 0x1
+
+C:\Users\lfgs\tpm\tpmjdemo>java -Djava.library.path=C:\Users\lfgs\tpm\tpmj\lib\
+    edu.mit.csail.tpmj.tools.TPMIncCounter 0xa000061 foocount
+
+Parsing command-line arguments ...
+
+counterPwd = foocount, Encoded (Infineon/Vista (SHA1 of UTF16LE without null ter
+minator) = 33353475e77df61d66a602d6dc57e90e1bbfa720
+Incrementing counter 0xa000061
+Output: TPM_COUNTER_VALUE: label: 0x434e5452 (CNTR), counter value: 0x2
+
+NOTE: You will not be able to increment
+any other counters aside from 0xa000061
+until you reboot.
+
+C:\Users\lfgs\tpm\tpmjdemo>
+</pre>
+
+<h5>Count-stamp a file (uses monotonic counter and transport sessions)</h5>
+
+Count-stamping currently doesn't work under Vista because it requires a loaded key.
+See more details about the problem <a href="#vistaloadkeyproblem">here</a>.)
+
+
+<hr>
+<i>
+Author (v0.3): Luis Sarmenta (lfgs at mit dot edu)<br>
+Last edit by: Luis Sarmenta on April 3, 2007
+</i>
+</body>
+</html>
+

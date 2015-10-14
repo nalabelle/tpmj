@@ -1,0 +1,1264 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta name="generator" content="HTML Tidy, see www.w3.org">
+<title>TPM/J 0.3 User's Guide</title>
+</head>
+<body>
+<center>
+<h1>TPM/J 0.3 User's Guide</h1>
+</center>
+
+<ul>
+<li><a href="#intro">1. Introduction</a></li>
+
+<li><a href="#reqs">2. System Requirements</a></li>
+
+<li><a href="#pkg">3. TPM/J Packages</a></li>
+
+<li><a href="#settings">4. Library and Other Settings</a></li>
+
+<li><a href="#tools">5. TPM Tools</a></li>
+</ul>
+
+<h2><a name="intro">1. Introduction</a></h2>
+
+<p>
+This document provides a brief overview of the TPM/J package
+structure, as well as documentation on how to start 
+using the TPM/J software tools in the <tt>tools</tt> package.
+</p>
+
+
+<h2><a name="reqs">2. System Requirements</a></h2>
+
+<ul>
+<li>Java J2SE JRE 5.0 or above</li>
+
+<li>Windows XP, Windows Vista, Linux, or Intel Mac OS X</li>
+
+<li>TPM 1.1b (TPM 1.2 for full functionality)</li>
+
+<li>Installed and working drivers for the TPM
+<ul>
+  <li>(Plus, ifxtpm.dll for Windows XP)</li>
+</ul>
+</li>
+
+<li>The TPM <i>must</i> be enabled in the BIOS</li>
+</ul>
+
+ 
+<h2><a name="pkg">3. TPM/J Packages</a></h2>
+
+<ul>
+<li><i>edu.mit.csail.tpmj</i><br>
+ - Low-level declarations, including exceptions and constants.<br>
+<br>
+</li>
+
+<li><i>edu.mit.csail.tpmj.commands</i><br>
+ - Data structures representing the commands that TPM/J passes to
+the TPM.<br>
+ - Data structures representing the results returned from the
+TPM.<br>
+<br>
+</li>
+
+<li><i>edu.mit.csail.tpmj.counters</i><br>
+ - Classes and tools for more advanced usage of monotonic counters (e.g., "count-stamping").<br>
+<br>
+</li>
+
+
+<li><i>edu.mit.csail.tpmj.demo</i><br>
+ - Demonstrations of TPM features and timing constraints.<br>
+<br>
+</li>
+
+<li><i>edu.mit.csail.tpmj.drivers.&lt;linux|win32&gt;</i><br>
+ - Provides the interfaces for communicating between Java and the
+TPM drivers in Linux/Mac OS X and Windows XP/Vista.<br>
+<br>
+</li>
+
+<li><i>edu.mit.csail.tpmj.funcs</i><br>
+ - Utility methods group by function (e.g. PCR functions, auth
+functions, etc.)<br>
+<br>
+</li>
+
+<li><i>edu.mit.csail.tpmj.structs</i><br>
+ - Java representations of the TPM structures defined in the TCG
+specification.<br>
+<br>
+</li>
+
+<li><i>edu.mit.csail.tpmj.tests</i><br>
+ - Basic tests of various TPM functions (for developers' use).<br>
+<br>
+</li>
+
+<li><i>edu.mit.csail.tpmj.tools</i><br>
+ - Useful tools for managing TPM resources, and creating key,
+counters, and other TPM structures.<br>
+<br>
+</li>
+
+<li><i>edu.mit.csail.tpmj.transport</i><br>
+ - Methods and data structures dealing with TPM transport
+sessions.<br>
+<br>
+</li>
+
+<li><i>edu.mit.csail.tpmj.util</i><br>
+ - Various utility structures and methods for dealing with
+ByteArrayable classes, serializable structures, debugging and
+cryptography.<br>
+<br>
+</li>
+
+<li><i>edu.mit.csail.tpmj.util.stats</i><br>
+ - Data structures and utilities for keeping track of statistics
+during simulations and tests.<br>
+</li>
+</ul>
+
+ 
+<h2><a name="settings">4. Library and Other settings</a></h2>
+
+<h3>Classpath Settings</h3>
+
+The class files for TPM/J are provided in tpmj.jar, or the bin
+directory in the distribution. Make sure to include either tpmj.jar
+or the bin directory in your classpath when running TPM/J. 
+
+<p>Also, some TPM/J classes and methods require the <a href=
+"http://www.bouncycastle.org/">Bouncy Castle Provider library</a>.
+A redistributable .jar file (bcprov-jdk15-131.jar) is included in
+the TPM/J distribution under the lib directory. This .jar file
+should also be included in your classpath when running TPM/J. 
+
+<p>The <tt>settpmjclasspath.sh</tt> file shows how you might set
+your classpath for use with Linux or Mac OS X, assuming that the
+TPM/J files are under <tt>~/tpm/tpmj</tt>. To use it, run it as: 
+
+<pre>
+. settpmjclasspath.sh
+</pre>
+
+(The <tt>.</tt> and the space after it is necessary. Otherwise, the
+classpath setting won't stick.) 
+
+<h3>Linux</h3>
+
+For Linux, TPM/J reads and writes to the <strong>/dev/tpm0</strong>
+device provided by the standard Linux TPM driver, which was based
+on the <a href="http://tpmdd.sourceforge.net/"><tt>tpmdd</tt></a>
+project. The latest versions of the Linux kernel should already
+include this driver by default, so there should be no need
+to install tpmdd separately. (Note that you may have to change the
+permissions for the <tt>/dev/tpm0</tt> device or use <tt>sudo</tt>
+when running Java in order to avoid permissions problems.) 
+
+<h3>Windows XP</h3>
+
+<p>
+For Windows XP, TPM/J currently works if you have
+<strong>ifxtpm.dll</strong> in your Windows' system32 directory or
+in your PATH. This is the TDDL-level library provided in software
+based on Infineon's TPM software stack. 
+Note that the TPM software bundled by several
+manufacturers are actually Infineon-based even if they are not
+Infineon-branded and the TPM chip itself is not an Infineon chip.
+(An example is that HP ProtectTools suite that we used with our HP
+DC7600 machine. It is based on Infineon's software, and has
+ifxtpm.dll, although the HP DC7600 machine itself has a Broadcom
+TPM 1.2 chip.)
+</p>
+
+<p>The file IFXTPMJNIProxy.dll in the lib directory of the TPM/J
+distribution is also required. Thus, to use TPM/J under Windows,
+you have to run Java with the -D option pointing
+<tt>java.library.path</tt> to the lib directory. e.g., 
+
+<pre>
+java -Djava.library.path=C:\TPMJ\lib ...
+</pre>
+
+(In Eclipse, you can add the following under VM Arguments when
+setting up your application to "Run as a Java Application": <br>
+ <tt>-Djava.library.path=${workspace_loc:TPMJ}/lib</tt> ) 
+
+
+<h3>Windows Vista</h3>
+
+Thomas M&uuml;ller (<a href="http://www.xnos.org">xnos.org</a>) has
+contributed code for using TPM/J under Windows Vista
+using the TDDL-like interface of the TBS. 
+To use this, you need to have the TBSProxy.dll file in the lib directory
+of the TPM/J distribution. Thus, as with Windows XP above, you have
+to run Java with the -D option pointing <tt>java.library.path</tt>
+to the lib directory. e.g., 
+
+<pre>
+java -Djava.library.path=C:\TPMJ\lib ...
+</pre>
+
+(In Eclipse, you can add the following under VM Arguments when
+setting up your application to "Run as a Java Application": <br>
+ <tt>-Djava.library.path=${workspace_loc:TPMJ}/lib</tt> 
+
+<p>
+Note that under Vista, you need to run your TPM/J application
+as an Administrator.  (If you are running the applications
+from Eclipse, you must run Eclipse as administrator.  If you
+are running the applications from the command line,
+then the command prompt must be run as administrator.)
+</p>
+
+
+<p>
+Note also that by default, many TPM commands are <em>blocked</em>
+in TBS, so many TPM/J tools will fail to work.
+To unblock these commands, you
+should run the Group Policy Editor:
+<em>
+gpedit.msc | Computer Configuration | Administrative Templates | System | Trusted Platform Module Services | Ignore the default list of blocked TPM commands = enabled 
+</em>.
+Alternatively, run tpm.msc and under Command Management, make sure that the commands you need are unblocked.
+</p>
+
+<p>
+<strong>Warning!</strong>  If you are already using the TPM in Vista for other functionality (e.g., BitLocker), 
+take extra precaution when using TPM/J, especially the blocked commands, as these may
+interfere with your applications.
+</p>
+
+<p>
+To maintain compatibility with Vista-assigned authorization data,
+the TPM/J 0.3 tools package now defaults to encoding passwords
+using what used to be the -i ("Infineon-style") option in previous versions.
+Also note that Vista uses a "well-known"
+value of all-zeros for the SRK authorization value.
+You can indicate this by using "" (empty string) in
+place of the SRK password on the command-line when 
+using the TPM/J command-line tools.
+</p>
+
+<a name="vistaloadkeyproblem"></a>
+<p>
+<b>Note:</b> using the current implementation of the TPM/J Vista TBS 
+driver class, the LoadKey tool works, but the key that it loads 
+is unloaded when the program exits.  The reason for this
+is that TPM/J creates a new TBS session every time 
+the TPM driver class is initialized, and there is currently
+no way to make two applications running in a different
+Java VM share the same TBS session.  When the program
+exits, the TBS session is closed, and Vista releases
+all the resources used by that session, so the key does
+not remain loaded in the TPM.
+</p>
+
+<p>
+Because of this problem, using other
+TPM/J tools (such as TPMSign, TPMUnbind, etc.),
+that depend on having a key handle available,
+does <em>not</em> work under Vista right now.
+However, note that <em>within the same program</em>,
+loading a key, and using the resulting key handle
+works.  An example is actually part of the CreateKey
+and CreateAIK tools.
+</p>
+
+<p>
+We are working on modified versions of the 
+TPM/J tools which will allow the user to specify
+an unloaded key file instead of a loaded key handle.
+This feature should be in the next release.
+</p>
+
+
+<h3>Intel Mac OS X</h3>
+
+TPM/J works under an Intel Mac with a TPM chip, using the TPM
+driver ported by Amit Singh. Please follow the instructions in <a
+href="http://osxbook.com/book/bonus/chapter10/tpm/">Amit Singh's
+article</a> to build and install the driver. If you follow his
+instructions, you should end up with the file OSXBookTPM.kext in
+your ~/tpm/ directory. You must then load this driver by running: 
+
+<pre>
+sudo kextload -v OSXBookTPM.kext
+</pre>
+
+You may need to run this every time you reboot.
+
+<p>
+<b>Note:</b>You do <b>not</b> need to build, install, TrouSerS, tpmlib, or
+any of the other packages aside from OSXBookTPM.kext that
+is included on Amit Singh's web page.
+</p>
+
+<p>Once the driver is loaded, you should see the <tt>/dev/tpm</tt>
+device, which should work the same way that the <tt>/dev/tpm0</tt>
+device works under Linux. TPM/J automatically knows to use
+<tt>/dev/tpm</tt> when running under Mac OS X, so you can use TPM/J
+the same way as you would under Linux. (Note that you may have to
+change the permissions for <tt>/dev/tpm</tt> device or use
+<tt>sudo</tt> when running Java in order to avoid permissions
+problems.) 
+
+<h2><a name="tools">5. TPM Tools</a></h2>
+
+<p>
+The classes in the <tt>tools</tt> package provide command-line tools that
+can be used to manage and use the TPM without having to write your own code.
+</p>
+
+<h3>Notes</h3>
+<ul>
+<li>Arguments in triangular brackets &lt;&gt; are required.
+Arguments in square brackets [] are optional.</li>
+
+<li>TPM/J supports different ways of deriving a 20-byte value
+for use as the authorization secret data value, 
+given a user-typable text password.  Whenever these tools
+require a password on the command-line, you can indicate 
+which encoding method to use by using an approprite prefix
+before your desired password (with no space between
+the prefix and the password text).
+Supported prefixes are:
+<ul>
+<li> -i : This is the default.  Uses hash of UTF16LE encoding of the password without null terminator.
+This method is used in Windows Vista, and by the Infineon software stack for Windows XP.</li>
+<li>
+-I : hash of UTF16LE <em>with</em> null terminator (default)
+</li>
+<li>
+-T : "Strict TSS style" = hash of UTF16BE with null terminator
+</li>
+<li>
+-p : Hash of 8-bit plain ASCII string without null terminator.  
+This is the method used in IBM's original tpm tools (before TrouSerS).
+</li>
+<li>
+-P : Hash of 8-bit ASCII with null terminator
+</li>
+<li>
+-null : Uses all-zeroes, strings, but when permitted, also 
+indicates that no authorization is needed.  
+(When creating keys, giving a null usage password would allow
+the key to be used either without authorization, or
+with authorization, using 20 zeroes as the authorization data value.)
+</li>
+<li>
+empty string ("") or -zero : Use 20-byte array of all zeroes as the value
+</li>
+<li>
+-B64 : Base-64.  If you backup your owner password under Vista, Vista produces
+and XML file with a Base-64 representation of the owner authorization data.
+</li>
+<li>
+0x = Hex.  Allows you to specify the 20 bytes directly (big-endian).
+</ul>
+</li>
+<li>TPM/J version 0.2 defaulted to -p encoding.  TPM/J v 0.3 now defaults to -i encoding
+since this is used by Vista.</li>
+<li>Windows Vista encodes your entered owner password using 
+-i style encoding, and uses all-zeroes for the SRK password.
+If you had Vista generate the owner password you automatically,
+you can get the Base-64 authorization data from the file produced 
+by backing up the owner password.
+</li>
+</ul>
+
+<h3>How do I?</h3>
+<ul>
+<li><a href="#status">Get information about the TPM and its current status</a></li>
+
+<li><a href="#selftest">Perform a Full Self Test</a></li>
+
+<li><a href="#resetAuth">Reset Authorization Sessions</a></li>
+
+<li><a href="#clear">Clear the TPM</a></li>
+
+<li><a href="#activate">Activate the TPM</a></li>
+
+<li><a href="#owner">Take ownership of the TPM</a></li>
+
+<li><a href="#changeownerauth">Change the owner password</a></li>
+
+<li><a href="#changesrkauth">Change the SRK password</a></li>
+
+<li><a href="#aik">Create a new AIK</a></li>
+
+<li><a href="#key">Create a new TPM key</a></li>
+
+<li><a href="#loadkey">Load a key into the TPM</a></li>
+
+<li><a href="#wrapkey">Create an RSA private-public keypair in
+software, and then wrap it for the TPM</a></li>
+
+<li><a href="#sign">Sign a data file using a loaded key</a></li>
+
+<li><a href="#verify">Verify the signature of a data file</a></li>
+
+<li><a href="#bind">Encrypt (bind) a data file</a></li>
+
+<li><a href="#unbind">Decrypt (unbind) a data file</a></li>
+
+<li><a href="#freekey">Evict the keys from the TPM</a></li>
+
+<li><a href="#flush">Flush a key, authorization, or transport session</a></li>
+
+<li><a href="#readPCRs">Read PCRs (without quoting)</a></li>
+
+<li><a href="#extend">Extend a PCR</a></li>
+
+<li><a href="#quote">Quote all PCRs using a loaded key</a></li>
+
+<li><a href="#verifyquote">Verify a quote</a></li>
+
+<li><a href="#seal">Seal a data file</a></li>
+
+<li><a href="#unseal">Unseal a data file</a></li>
+
+<li><a href="#count">Create a new monotonic counter</a></li>
+
+<li><a href="#readcounter">Read a monotonic counter (TPM 1.2 only)</a></li>
+
+<li><a href="#inccounter">Increment a monotonic counter (TPM 1.2 only)</a></li>
+
+<li><a href="#relcount">Release monotonic counters from the
+TPM</a></li>
+
+<li><a href="countstamp">"Count-stamp" a data file (sign it with a monotonic counter value)</a></li>
+
+<li><a href="verifycountstamp">Verify the countstamp of a data file</a></li>
+
+</ul>
+
+
+<h3><a name="status">Get information about the TPM and its current status</a></h3>
+
+To get current information about the TPM, including flags, PCR values, and active handles, run:
+<pre>
+java edu.mit.csail.tpmj.tools.TPMInfo [ownerPwd]
+</pre>
+On a TPM 1.2 chip, if the TPM already has an owner, 
+you will need to supply the owner password to be able to read the public key of
+the EK.
+
+
+<h3><a name="selftest">Perform a Full Self Test</a></h3>
+
+On some systems (we have seen this happen particularly with the
+Infineon TPM 1.2 chip on an Intel Mac Mini), some operations
+(e.g., taking ownership, creating AIKs, etc.) fail unless you do
+a self test.
+<p />
+To do this, use tools.special.TPMSelfTest:
+<pre>
+java edu.mit.csail.tpmj.tools.special.TPMSelfTest
+</pre>
+
+<h3><a name="resetAuth">Reset Authorization Sessions</a></h3>
+
+When running some of the programs, you may get exceptions which
+cause the program to exit without cleaning up.  When this happens,
+there may be authorization sessions left open.  The TPM can 
+only keep track of a few authorizations total at a time before
+running out of "space" or "resources".
+If you are getting an error about TPM space or resources,
+try to run TPMResetAuth, which will free all outstanding
+authorization sessions.
+<pre>
+java edu.mit.csail.tpmj.tools.TPMResetAuth
+</pre>
+If this doesn't work, look into <a href="#freekey">evicting keys</a>, 
+or <a href="#flush">releasing transport sessions</a> which may be open.  
+Flushing specific handles can also be
+done using the <a href="#flush">TPMFlush</a> tool.
+
+<h3><a name="clear">Clear the TPM</a></h3>
+
+<p>
+The easiest way to clear the TPM
+in most systems (and maybe the only way on some systems) 
+would be to do it through the boot-up BIOS.  How to do this
+may vary from system to system.
+</p>
+
+<p>
+On an Intel Mac, there is no BIOS utility for accessing the TPM, and
+instead, the TPM can be clear and enabled directly via software.
+In this case, to clear the TPM, run tools.TPMForceClear:
+<pre>
+java edu.mit.csail.tpmj.tools.special.TPMForceClear
+</pre>
+After running this, you should REBOOT the machine.
+  
+<p>
+<strong>Warning!</strong>
+Note that clearing your TPM will invalidate any data or keys
+that have previously been encrypted/protected by the TPM.
+If you have used another tool to encrypt or seal data using
+the TPM, or if you have set up a personal storage drive,
+or use full-volume encryption or any other mechanism that
+uses TPM-protected keys, then 
+<em><b>
+you will not be able 
+to decrypt any data encrypted by the TPM after the TPM is cleared.</b></em>
+<strong>Please use this tool with caution!</strong>
+</p>
+
+
+<h3><a name="activate">Activate the TPM</a></h3>
+
+<p>
+The easiest way (if not the only way) to activate the TPM
+in most systems would be to do it through the boot-up BIOS.  
+How to do this may vary from system to system.
+</p>
+
+<p>
+On an Intel Mac, there is no BIOS utility for accessing the TPM, and
+instead, the TPM can be clear and enabled directly via software.
+In this case, to enable and activate the TPM, run tools.TPMActivate:
+<pre>
+java edu.mit.csail.tpmj.tools.special.TPMActivate
+</pre>
+(This assumes that the TPM is already in a cleared and disabled state.)
+After running this, you should REBOOT the machine.
+
+
+<h3><a name="owner">Take ownership of the TPM</a></h3>
+
+Once the TPM has already been cleared, and then enabled and activated,
+you need to take ownership of it before you can use it for real
+applications.
+
+Use tools.TPMTakeOwnership to take ownership of your TPM:
+<pre>
+java edu.mit.csail.tpmj.tools.TPMTakeOwnership &lt;ownerPassword&gt; [srkPassword] 
+</pre>
+
+<p>
+Arguments:<br>
+ - ownerPassword - The new owner password for the TPM.<br>
+ - srkPassword - The new SRK password to the TPM.<br>
+</p>
+
+<p> 
+ Notes:
+ <ul>
+<li>This command can only be run if the TPM does not yet have an
+owner.</li>
+<li>The public key of the SRK (in TPM_KEY format)
+ will be written to 'srk.pubkey'.
+(<b>Note:</b> On some systems, such as the Intel Mac with an Infineon TPM 1.2 chip,
+reading the public key of the SRK at a later time is not permitted unless you
+have the owner password, so you should keep a copy of this srk.pubkey file for future use.)
+</li>
+<li>To set the srkPassword to the "well-known" password (all-zeros), use two double quotes "" (denoting an empty string)
+ as the second argument.
+ </li>
+ <li>
+To set the srkPassword to all-zeros <em>and</em> allow for no-authorization use of the SRK, 
+do not use a second command-line argument at all.<br>
+<b>But note:</b> that if you do this, then
+the SRK will <em>always</em> be usable without authorization even if you 
+use the <a href="#changesrkauth"><tt>TPMChangeSRKAuth</tt></a> tool to
+change the SRK password itself in the future 
+(until the TPM is cleared and ownership is taken again).
+This is typically not a problem since the SRK is usually given a well-known password
+anyway (e.g., Vista needs it to be well-known to work).  Not requiring authorization
+for the SRK makes some operations easier/faster, since no OIAP or OSAP session is required.
+</li>
+</ul>
+</p>
+
+<p>
+<b><a name="TPMTakeOwnershipExample">Example:</a></b>
+<pre>
+java edu.mit.csail.tpmj.tools.TPMTakeOwnership tpmowner
+</pre>
+This takes ownership with owner password "tpmowner" (using Infineon/Vista encoding), 
+and null SRK password (with no authorization).
+</p>
+
+<h3><a name="changeownerauth">Change the owner password</a></h3>
+
+Use tools.TPMChangeOwnerAuth:
+<pre>
+java edu.mit.csail.tpmj.tools.TPMChangeOwnerAuth &lt;oldPwd&gt; &lt;newPwd&gt;
+</pre>
+
+<p>
+<b>Example:</b>
+<pre>
+java edu.mit.csail.tpmj.tools.TPMChangeOwnerAuth -ptpmowner tpmowner
+</pre>
+This changes the owner password from "tpmowner" encoded using
+the old (TPM/J v0.2) default encoding (i.e., plain 8-bit ASCII without null terminator)
+to the new default encoding style (i.e., UTF-16LE without null terminator, 
+as used by Infineon and Vista Windows stacks for Windows).
+</p>
+
+<h3><a name="changesrkauth">Change the SRK password</a></h3>
+
+Use tools.TPMChangeSRKAuth:
+<pre>
+java edu.mit.csail.tpmj.tools.TPMChangeSRKAuth &lt;ownerPwd&gt; &lt;newSRKPwd&gt;
+</pre>
+
+NOTE: This tool does <em>not</em> have the ability to change whether
+authorization is needed to use the SRK or not. If you took ownership
+with a "null" SRK password, then even if you change the SRK password
+the SRK will still be usable without an authorization session.
+(However, if you do use authorization, then the new password
+will be required.)
+
+
+<h3><b><a name="aik">Create a new AIK</a></b></h3>
+
+Use tools.TPMCreateAIK to create a new AIK:<br>
+<pre>
+java edu.mit.csail.tpmj.tools.TPMCreateAIK &lt;fileName&gt; &lt;aikPwd&gt; &lt;labelPrivCA&gt; &lt;ownerPwd&gt; [srkPwd] 
+</pre>
+
+Arguments:
+<ul>
+<li>fileName - The filename the AIK will be stored to.</li>
+<li>aikPwd - The password the AIK file.</li>
+<li>labelPrivCA - Data to be used for labelPrivCADigest.<br>
+This is interpreted the same way as passwords to produce a 20-byte hash.  
+To specify the digest bytes directly, use the 0x or -B64 prefixes. </li>
+<li>ownerPwd - The password of the owner of the TPM.</li>
+<li>srkPwd - The password to the SRK of the TPM (defaults to null).</li>
+</ul>
+
+Notes:
+<ul>
+<li>This program can take a while (e.g. a couple of minutes) to
+complete.</li>
+<li>This program runs through a series of tests to test the
+generated AIK. The last test tries to use the AIK in a TPM_Sign
+operation to show that an AIK cannot be used to sign arbitrary
+data. Thus, the last test *should* end in a TPM_INVALID_KEYUSAGE
+error.</li>
+</ul>
+
+<p>
+<b>Example:</b>
+<pre>
+java edu.mit.csail.tpmj.tools.TPMCreateAIK aik.key test 0x1234567890123456789012345678901234567890 tpmowner
+</pre>
+This creates a file with an AIK key, with password "test", assuming ownership was taken using
+the <a href="#TPMTakeOwnershipExample">TPMTakeOwnership example</a> above.
+The hex string starting with 0x is the 20-byte digest, labelPrivCADigest, 
+for the Privacy CA.
+</p>
+
+
+<h3><a name="key">Create a new TPM key</a></h3>
+
+Use tools.TPMCreateKey to create a new bind, signing, storage or
+legacy key:<br>
+<pre>
+java edu.mit.csail.tpmj.tools.TPMCreateKey &lt;fileName&gt; 
+      [keyType] [keyPwd] [parentHandle] [parentPwd] [/m migPwd] 
+</pre>
+
+<p>
+Output:<br>
+- a key blob (TPM_KEY format) under &lt;fileName&gt; containing the new wrapped key
+</p>
+
+<p>
+Arguments:<br>
+ - fileName - The file that the new key will be stored to.<br>
+ - keyType - 's' (signing), 'b' (bind), 'e' (storage), or 'l'
+(legacy). Deafults to 'l'.<br>
+ - keyPwd - The usage password for the new key.<br>
+ - parentHandle - The handle number of the previously-loaded parent key, or "SRK" for the SRK.<br>
+ - parentPwd - The usage password for the parent.  (Can be null.)<br>
+ - For migratable keys, use /m followed by space, and the migration password.<br>
+ 
+</p>
+
+<p>
+ Notes:<br>
+ - Some of the tests will fail depending on the type of the key:
+<ul>
+<li>Signing key (s) - The signing will work, but encryption will
+fail.</li>
+
+<li>Binding key (b) - The signing will fail.</li>
+
+<li>Storage key (e) - The signing will fail.</li>
+
+<li>Legacy key (l) - Both the signing and encryption will
+succeed.</li>
+</ul>
+- This operation can take a while (e.g. a few minutes) to
+complete.<br>
+- Some demos may assume a key file testkey.key with key password 
+"test" and migration password "test", and parent SRK, with null SRK password<br>
+</p>
+
+<p>
+<b>Example 1 (creating a legacy key):</b>
+<pre>
+java edu.mit.csail.tpmj.tools.TPMCreateKey testkey.key l test SRK /m test
+</pre>
+This creates a file containing a new migratable TPM_KEY blob
+with key and migration passwords equal to "test",
+using the SRK as the parent,
+assuming the SRK password was set to null using 
+the <a href="#TPMTakeOwnershipExample">TPMTakeOwnership example</a> above.
+</p>
+
+<p>
+<b><a name="createstoragekey">Example 2 (creating a storage key):</a></b>
+<pre>
+java edu.mit.csail.tpmj.tools.TPMCreateKey storage1.key e storetest SRK
+</pre>
+This creates a file containing a non-migratable storage key blob
+with password "storetest", and having the SRK as its parent with
+no authorization (as in the 
+<a href="#TPMTakeOwnershipExample">TPMTakeOwnership example</a> above).
+(Note that the keyType for
+a storage key is "e", not "s", which is the keyType for a signing key.)
+</p>
+<p>
+The resulting key can later be loaded and used for wrapping and loading
+a child key, as in <a href="#wrapkeyexample2">the example below</a>.
+</p>
+
+
+
+<h3><a name="wrapkey">Create an RSA private-public keypair in software, and then wrap it for the
+TPM</a></h3>
+
+Use tools.TPMWrapKey to generate an RSA keypair in software, and
+then create an SRK-wrapped TPM key for the TPM:<br>
+<pre>
+java edu.mit.csail.tpmj.tools.TPMWrapKey &lt;fileName&gt; 
+      [keyType] [keyPwd] [migPwd] 
+      [parentHandle | "SRK" | parentFileName] [parentPwd] [/ownerPwd pwd] 
+</pre>
+
+<p>
+Output:
+<ul>
+<li>a key blob (TPM_KEY format) under &lt;fileName&gt; containing the new wrapped key</li>
+<li>a binary file "&lt;fileName&gt;.ser", which contains the public-private RSA key object
+serialized using Java serialization.</li>
+</ul>
+</p>
+
+<p>
+Arguments:
+<ul>
+<li>fileName - The file that the new key will be stored to.</li> 
+<li>keyType - 's' (signing), 'b' (bind), 'e' (storage), or 'l'
+(legacy). Deafults to 'l'.</li>
+<li>keyPwd - The usage password for the new key.</li>
+<li>migPwd - Password for migration.  (Wrapped externally-generated keys MUST be migratable.)</li>
+<li>parentHandle - The handle number of the previously-loaded parent storage key, or "SRK" for the SRK.<br>
+   Alternatively, instead of parentHandle, put a file name here
+   (ending with .key or .pubkey) to use a saved key or public key blob
+   (In this case, no parentPwd is required to just create the key, but it is
+   required to load the key.)</li>
+<li>parentPwd - The usage password for the parent.  (Can be null.)</li>
+<li>ownerPwd is necessary when parent is the SRK (Use "/ownerPwd" followed by space and password).</li>
+</ul>
+</p>
+
+
+<p>
+<b>Example 1: Using SRK as parent, with knowledge of the owner password</b>
+<pre>
+java edu.mit.csail.tpmj.tools.TPMWrapKey wrappedkey.key l test test SRK /ownerPwd tpmowner
+</pre>
+This creates a file containing a new migratable TPM_KEY blob
+with key and migration passwords equal to "test",
+using the SRK as the parent,
+assuming the SRK password and owner password were set using 
+the <a href="#TPMTakeOwnershipExample">TPMTakeOwnership example</a> above.
+</p>
+
+<p>
+<b>Example 2: Using SRK as parent, without knowledge of the owner password but with SRK public key in file srk.pubkey</b>
+<pre>
+java edu.mit.csail.tpmj.tools.TPMWrapKey wrappedkey.key l test test SRK
+</pre>
+In this case, getting the SRK public key from the TPM 
+will fail (since the TPM owner password is not null),
+and the program will look for the srk.pubkey file 
+generated by <a href=#TPMTakeOwnershipExample>TPMTakeOwnership</a>
+in the current directory and use the public key stored there.
+(If SRK password is known, you can add it after "SRK" in the command-line.)
+</p>
+
+<p>
+<b><a name="wrapkeyexample3">Example 3: Using a loaded non-SRK storage key</a></b>
+<br>
+First, <a href="#loadkey">load</a> the parent key (in the case, the storage key created by <a href=#createstoragekey>the example above)</a>:
+<pre>
+java edu.mit.csail.tpmj.tools.TPMLoadKey storage1.key
+</pre>
+(Note that this assumes storage1.key has the SRK as its parent, and the SRK has no authorization password.)
+<br>
+<br>
+Now, suppose this returns a key handle 0x5e70328.
+<br>
+Then, run TPM WrapKey:
+<pre>
+java edu.mit.csail.tpmj.tools.TPMWrapKey wrappedchild.key l test test 0x5e70328 storetest
+</pre>
+This will produce a key wrapped (encrypted) according to the public key of storage1.key.
+</p>
+
+<p>
+<b>Example 4: Using parent's key blob file without parent password</b>
+<pre>
+java edu.mit.csail.tpmj.tools.TPMWrapKey wrappedchild.key l test test storage1.key
+</pre>
+This will produce a key wrapped (encrypted) according to the public key of storage1.key,
+even if you do not know the authorization password for storage1.key.  Note, however,
+that the key tests (signing, etc.) will fail because the program will not be able to load
+the child key.
+</p>
+
+
+<h3><a name="loadkey">Load a key into the TPM</a></h3>
+
+Use tools.TPMLoadKey to load a key into the TPM:
+<pre>
+java edu.mit.csail.tpmj.tools.TPMLoadKey &lt;fileName&gt; [parentHandle | "SRK" ] [parentPwd] 
+</pre>
+
+Output: the key handle of the loaded key
+
+<p>
+Arguments:<br>
+- parentHandle should be the handle number of the loaded parent key<br>
+  Use "SRK" for the SRK.  Default is SRK.<br>
+- If parentPwd is not given, null password with no authorization is assumed.<br>
+
+</p>
+
+<p>
+<b>Example 1: Load a key that is the child of the SRK (with no SRK authorization)</b>
+<br>
+<pre>
+java edu.mit.csail.tpmj.tools.TPMLoadKey storage1.key
+</pre>
+This assumes storage1.key, created by <a href=#createstoragekey>the example above</a>,
+which has the SRK as its parent, and the SRK has no authorization password.)
+</p>
+
+<p>
+<b>Example 2: Load a child of another storage key</b>
+<br>
+<pre>
+java edu.mit.csail.tpmj.tools.TPMLoadKey wrappedchild.key 0x5e70328 storetest
+</pre>
+This assumes storage1.key has already been loaded with key handle
+0x5e70328, and that wrappedchild.key is the key created
+in <a href="#wrapkeyexample3">the example above</a>.
+</p>
+
+<h3><a name="sign">Sign a data file using a loaded key</a></h3>
+
+First, <a href="#loadkey">load</a> the key you want to use into the TPM.  
+The key must be either a signing key or a legacy key.
+Then, use tools.TPMSign to sign a data file given the key's handle.
+<pre>
+java edu.mit.csail.tpmj.tools.TPMSign &lt;fileName&gt; &lt;keyHandle&gt; [keyPwd] 
+</pre>
+
+Output: The file &lt;fileName&gt;.sig containing the bytes comprising the
+RSA signature of the data in fileName.  
+(It actually contains the signature of the SHA-1 hash of the data.)
+
+<h3><a name="verify">Verify the signature of a data file</a></h3>
+
+<p>
+Run tools.TPMVerifySig:
+<pre>
+java edu.mit.csail.tpmj.tools.TPMVerifySig &lt;dataFile&gt; &lt;keyFile&gt;
+</pre>
+Inputs:
+<ul>
+<li>&lt;dataFile&gt; - filename of file with the original data<br> 
+(In addition to the file &lt;dataFile&gt; The file &lt;dataFile&gt;.sig must exist and have the signature for the file.)</li>
+<li>&lt;keyFile&gt; - .key or .pubkey file containing a TPM_KEY or TPM_STORE_PUBKEY structure"</li>
+</ul>
+</p>
+
+<p>
+Note: This is done completely in software (without using the TPM)
+using the public key information stored in the given .key or .pubkey file.
+It is possible to verify a signature without knowing the private key or
+authorization password of the key.
+</p>
+
+<h3><a name="bind">Encrypt (bind) a data file</a></h3>
+
+<p>
+Run tools.TPMBind:
+<pre>
+java edu.mit.csail.tpmj.tools.TPMBind &lt;dataFile&gt; &lt;keyFile&gt;
+</pre>
+Inputs:
+<ul>
+<li>&lt;dataFile&gt; - filename of file with the original data
+<li>&lt;keyFile&gt; - .key or .pubkey file containing a TPM_KEY or TPM_STORE_PUBKEY structure"</li>
+</ul>
+Output: file &lt;dataFile&gt;.enc containing the encrypted form of the data
+
+<p>
+Notes: 
+<ul>
+<li>This is done completely in software (without using the TPM)
+using the public key information stored in the given .key or .pubkey file.
+It is possible to encrypt data without knowing the private key or
+authorization password of the key.</li>
+<li>There is a limit to the size of the data that can be signed depending
+on the size of the key and type of the key</li>
+</ul>
+</p>
+
+<h3><a name="unbind">Decrypt (unbind) a data file</a></h3>
+
+<p>
+First, <a href="#loadkey">load</a> the key you want to use into the TPM.  
+The key must be either a binding key or a legacy key.
+Run tools.TPMUnbind:
+<pre>
+java edu.mit.csail.tpmj.tools.TPMUnbind &lt;fileName&gt; &lt;keyHandle&gt; [keyPwd]
+</pre>
+Output: &lt;fileName&gt;.plain containing decryption of &lt;fileName&gt;
+
+
+<h3><a name="freekey">Evict keys from the TPM</a></h3>
+
+Use tools.TPMEvictKey to evict one or all loaded keys from the TPM:<br>
+<pre>
+java edu.mit.csail.tpmj.tools.TPMEvictKey &lt;keyHandle | "all"&gt;
+</pre>
+
+Notes:<br>
+- Sometimes, errors encountered during demos would cause loaded
+keys not to be unloaded. This uses up space on the TPM which
+would prevent other keys from being loaded.&nbsp; If you are
+encountering problems, try using TPMEvictKey to clear the space
+used by these keys.<br>
+
+<h3><a name="flush">Flush a key, authorization, or transport session</a></h3>
+
+Use tools.TPMFlush to evict/flush a specific handle of a certain type
+<pre>
+java edu.mit.csail.tpmj.tools.TPMFlush &lt;type&gt; &lt;handle | "all"&gt;
+</pre>
+
+<p>
+Types:<br>
+a - authorization session<br>
+c - context<br>
+k - key<br>
+t - transport session<br>
+</p>
+
+<h3><a name="readPCRs">Read PCRs (without quoting)</a></h3>
+
+Use the TPMReadPCRs tool:
+<pre>
+java edu.mit.csail.tpmj.tools.TPMReadPCRs
+</pre>
+
+<h3><a name="extend">Extend a PCR</a></h3>
+
+Use the TPMExtend tool:
+<pre>
+java edu.mit.csail.tpmj.tools.TPMExtend &lt;pcrNum&gt; [data]
+</pre>
+
+Notes:
+<ul>
+<li>The <tt>data</tt> parameter is interpreted 
+in the same way as passwords, to produce
+the 20-byte digest that the PCR will be extended by.
+The recommended way of using this would be to 
+use a 20-byte hex number,
+starting with 0x (e.g., 0x12345678901234567890123456789012345678901234567890).
+</li>
+<li>Warning: Extending a PCR may prevent certain sealed blobs or keys
+from being usable, and may interfere with certain applications or operations that
+depend on PCRs having particular values (until the machine is rebooted).</li>
+</ul>
+
+
+<h3><a name="quote">Quote all PCRs using a loaded key</a></h3>
+
+First, <a href="#loadkey">load</a> the key you want to use into the TPM.  
+The key must be either a signing key or an AIK.
+Then, use tools.TPMQuote:
+<pre>
+java edu.mit.csail.tpmj.tools.TPMQuote &lt;fileName&gt; &lt;keyHandle&gt; [keyPwd]
+</pre>
+
+<p>
+Inputs:
+<ul>
+<li>fileName - root file name for output files to be generated<br>
+(This fileName is also hashed to produce the nonce used for the quote.)</li>
+<li>keyHandle - handle of loaded signing key or AIK<br>
+(Note: if this key is not an AIK, then the quote is actually forgeable using a TPM_Sign operation.)
+</li>
+<li>keyPwd - password for key (default to no authorization)</li>
+</ul>            
+</p>
+<p>
+Outputs:
+<ul>
+<li>&lt;fileName&gt;.quot - file containing TPM_PCR_COMPOSITE structure with PCR values</li>
+<li>&lt;fileName&gt;.sig - file containing signature file on TPM_QUOTE_INFO</li>
+</ul>
+</p>
+   
+<h3><a name="verifyquote">Verify a quote</a></h3>
+
+<p>
+Run tools.TPMVerifyQuote:
+<pre>
+java edu.mit.csail.tpmj.tools.TPMVerifyQuote &lt;dataFile&gt; &lt;keyFile&gt;
+</pre>
+Inputs:
+<ul>
+<li>&lt;dataFile&gt; - name of .quot and .sig file pair to be verified</li>
+<li>&lt;keyFile&gt; - .key or .pubkey file containing a TPM_KEY or TPM_STORE_PUBKEY structure"</li>
+</ul>
+</p>
+
+<p>
+Note: This is done completely in software (without using the TPM)
+using the public key information stored in the given .key or .pubkey file.
+It is possible to verify a quote without knowing the private key or
+authorization password of the key.
+</p>
+
+<h3><a name="seal">Seal a data file</a></h3>
+
+<p>
+Run tools.TPMSeal:
+<pre>
+java edu.mit.csail.tpmj.tools.TPMSeal &lt;dataFile&gt; &lt;keyHandle&gt; &lt;keyPwd&gt; &lt;dataPwd&gt; [pcrNums...]
+</pre>
+
+Inputs:
+<ul>
+<li>dataFile - filename of file with the original data
+<li>keyHandle - handle of loaded storage key (or "SRK")</li>
+<li>keyPwd - key password</li>
+<li>dataPwd - data password to be required for unsealing</li>
+<li>pcrNums - space delimited list of pcr IDs to seal the data to<br>
+(omit to seal independent of PCRs; use "all" to seal to all PCRs)
+</li>
+</ul>
+Output: file &lt;dataFile&gt;.sealed containing a TPM_STORED_DATA structure
+
+<p>
+Notes: 
+<ul>
+<li>This tools seals the data blob to the <em>current</em> values
+of the selected PCRs.</li>
+</ul>
+</p>
+
+<h3><a name="unseal">Unseal a data file</a></h3>
+
+<p>
+Run tools.TPMUnseal:
+<pre>
+java edu.mit.csail.tpmj.tools.TPMUnseal &lt;dataFile&gt; &lt;keyHandle&gt; &lt;keyPwd&gt; &lt;dataPwd&gt;
+</pre>
+
+Inputs:
+<ul>
+<li>dataFile - filename of file with the sealed data
+<li>keyHandle - handle of loaded storage key (or "SRK")</li>
+<li>keyPwd - key password</li>
+<li>dataPwd - data password</li>
+</ul>
+Output: file &lt;dataFile&gt;.unsealed containing a TPM_STORED_DATA structure
+
+<p>
+Notes: 
+<ul>
+<li>This tools unseals the data only if the PCR configuration and the dataPwd match
+those specified when the sealed data blob was created.</li>
+</ul>
+</p>
+
+
+
+<h3><a name="count">Create a new monotonic counter (TPM 1.2 only)</a></h3>
+
+Use tools.TPMCreateCounter to create a monotonic counter:<br>
+<pre>
+java edu.mit.csail.tpmj.tools.TPMCreateCounter &lt;ownerPwd&gt; [counterLabel] [counterPwd]
+</pre>
+
+<p>
+Arguments:<br>
+ - ownerPwd - The password of the owner of the TPM.<br>
+ - counterLabel - The label for the monotonic counter.<br> 
+   This must be 4 bytes long. Defaults to 'CNTR'.
+ - counterPwd - Authorization password for counter.  Defaults to all-zeroes.
+</p>
+<p> 
+Notes:<br>
+ - If the new TPM counter ID is returned as -1, the counter
+creation probably failed.<br>
+</p>
+
+<h3><a name="readcounter">Read a monotonic counter (TPM 1.2 only)</a></h3>
+
+<pre>
+java edu.mit.csail.tpmj.tools.TPMReadCounter &lt;counterID&gt;
+</pre>
+
+<p>
+NOTE: counterID is the counter handle number (not the label)
+</p>
+
+<h3><a name="inccounter">Increment a monotonic counter (TPM 1.2 only)</a></h3>
+
+<pre>
+java edu.mit.csail.tpmj.tools.TPMIncCounter &lt;counterID&gt; [counterPwd]
+</pre>
+
+Notes:<br>
+<ul>
+<li>counterID is the counter handle number (not the label)</li>
+<li>If no counter password is given, a null password (all-zeros) is used</li>
+<li>Only one counter can be incremented per reboot of the machine.
+If any other counters have been incremented since the last reboot,
+the counter creation may succeed while the increment fails with a
+TPM_BAD_COUNTER message. To prevent this, the machine should be
+rebooted before running this command.</li>
+</ul>
+
+
+<h3><a name="relcount">Release monotonic counters from the TPM</a></h3>
+
+Use tools.TPMReleaseCounters to release one or all of the monotonic counters
+from the TPM:<br>
+<pre>
+java edu.mit.csail.tpmj.tools.TPMReleaseCounters &lt;handle | "all"&gt; [counterPwd] [/ownerPwd password]
+</pre>
+
+<p>
+Notes:
+<ul>
+<li>Use /ownerPwd followed by a space and the owner password
+when releasing all counters, or when releasing a counter 
+without knowing the counter password</li>
+<li>WARNING: This command will irreversibly destroy 
+the specified counter(s) currently loaded
+in the TPM so that they can no longer be read or incremented.</li>
+</ul>
+</p>
+
+<p>
+<b>Example 1: Releasing all counters using owner password</b>
+<pre>
+java edu.mit.csail.tpmj.tools.TPMReleaseCounters all /ownerPwd tpmowner
+</pre>
+This assumes that the owner password is "tpmowner".
+</p>
+
+<p>
+<b>Example 2: Releasing a specific counter using the specific counter password</b>
+<pre>
+java edu.mit.csail.tpmj.tools.TPMReleaseCounters 0xa1a608c test
+</pre>
+This assumes that the counter has handle 0xa1a608c and password "test".
+</p>
+
+<p>
+<b>Example 3: Releasing a specific counter using the owner password</b>
+<pre>
+java edu.mit.csail.tpmj.tools.TPMReleaseCounters 0xa1a608c /ownerPwd tpmowner
+</pre>
+</p>
+
+<h3><a name="countstamp">"Count-stamp" a data file (sign it with a monotonic counter value)</a></h3>
+
+<p>
+First, <a href="#loadkey">load</a> the key you want to use into the TPM.
+Usually, this should be an AIK.  (Otherwise, one can produce a fake countstamp
+using the TPM_Sign operation on the TPM.)
+</p>
+
+Then, use counters.CreateCountStamp to sign a data file given the key's handle.
+<pre>
+java edu.mit.csail.tpmj.tools.TPMCreateCountStamp &lt;fileName&gt; &lt;R|I&gt; &lt;counterID&gt; &lt;counterPwd&gt; &lt;keyHandle&gt; [keyPwd]\n\n"
+</pre>
+
+<p>
+Notes: 
+<ul>
+<li>Use "R" for Read operation and "I" for Increment</li>
+<li>for all-zeroes counterPwd, use ""</li>
+</ul>
+</p>
+
+Output: Binary file &lt;filename&gt;.cntstmp, containing the TPMCountStamp of the SHA-1 hash of the file contents.
+TPMCountStamp is a TPM/J-specific data structure (not TCG-defined) containing the log of the
+transport session used to wrap the read or increment TPM command.  
+
+<h3><a name="verifycountstamp">Verify the countstamp of a data file</a></h3>
+
+Run counters.TPMVerifyCountStamp:
+<pre>
+java edu.mit.csail.tpmj.tools.TPMVerifyCountStamp &lt;dataFile&gt; &lt;keyFile&gt;
+</pre>
+
+<p>
+Inputs:
+<ul>
+<li>&lt;dataFile&gt; - filename of file with the original data<br> 
+(In addition to the file &lt;dataFile&gt; The file &lt;dataFile&gt;.sig must exist and have the signature for the file.)</li>
+<li>&lt;keyFile&gt; - .key or .pubkey file containing a TPM_KEY or TPM_STORE_PUBKEY structure"</li>
+</ul>
+</p>
+
+<p>
+Note: 
+<li>This program will print the contents of the time stamp (including the counter ID, label, and value,
+and the hash of the data that was stamped).</li>
+<li>It compares the stamped hash and the data file's hash and then finally checks that the signature on
+the time stamp is authentic, given the provided public key.</li>
+<li>This is done completely in software (without using the TPM)
+using the public key information stored in the given .key or .pubkey file.
+It is possible to verify the time stamp without knowing the private key or
+authorization password of the key.</li>
+
+</p>
+
+
+<hr>
+<i>
+Lead author (v0.3): Luis Sarmenta (lfgs at mit dot edu)<br>
+Original author (v0.2): Jonathan Rhodes (jrhodes at mit dot edu)<br>
+Last edit by: Luis Sarmenta on April 3, 2007
+</i>
+</body>
+</html>
+

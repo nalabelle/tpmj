@@ -1,0 +1,8 @@
+EXPORTS
+TDDL_Cancel
+TDDL_Close
+TDDL_GetCapability
+TDDL_GetStatus
+TDDL_Open
+TDDL_SetCapability
+TDDL_TransmitData
